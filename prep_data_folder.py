@@ -11,19 +11,18 @@ import os
 import re
 import tempfile
 
-
 def get_minifier(suffix):
 
     if suffix in set([".htm", ".html"]):
         return (
             "html-minifier --collapse-whitespace --remove-comments --remove-optional-tags \
 --remove-redundant-attributes --remove-script-type-attributes --remove-tag-whitespace \
---use-short-doctype --minify-css true --minify-js true {S} | gzip > {D}",
+--use-short-doctype --minify-css true --minify-js true {S} | gzip -c > {D}",
             ".gz",
         )
 
     if suffix in set([".js", ".css", ".ttf"]):
-        return "gzip -9 < {S} > {D}", ".gz"
+        return "gzip -9 -c < {S} > {D}", ".gz"
 
     return None, None
 
@@ -65,14 +64,14 @@ def make_restrict(data_src_dir: Path, src_file: Path, data_dir: Path) -> None:
     cmd, suffix = get_minifier(src_file.suffix)
 
     # no really clear... to be simplified
-    dest_file = data_dir / src_file.relative_to(data_src_dir)
+    dest_file = Path(os.path.join(data_dir , src_file.relative_to(data_src_dir) ))
     suffix = ".restrict" + "".join(dest_file.suffixes) + suffix
     dest_file = dest_file.with_suffix("")
     dest_file = dest_file.with_name(dest_file.name + suffix)
 
     cmd = cmd.format(S=t.name, D=dest_file.as_posix())
     subprocess.check_call(cmd, shell=True)
-    trace(f"  restricted: {src_file.relative_to(data_src_dir)} → {dest_file.relative_to(data_dir)}")
+    trace(f"  restricted: {src_file.relative_to(data_src_dir)} -> {dest_file.relative_to(data_dir)}")
 
 
 def prepare_www_files(source, target, env) -> None:
@@ -92,7 +91,7 @@ def prepare_www_files(source, target, env) -> None:
     trace(f"  PROJECTDATA_DIR = {data_dir}")
     trace(f"  PROJECT_DIR     = {project_dir}")
 
-    data_src_dir = project_dir / "data_src"
+    data_src_dir = Path(os.path.join( project_dir , "data_src" ))
 
     if data_dir.is_dir() and not data_src_dir.is_dir():
         trace(f'  "data" dir exists, "data_src" not found.')
@@ -109,7 +108,7 @@ def prepare_www_files(source, target, env) -> None:
     # clean destination directory
     entries_to_remove = []
     for dest_file in data_dir.rglob("*"):
-        src_file = data_src_dir / dest_file.relative_to(data_dir)
+        src_file = Path(os.path.join( data_src_dir , dest_file.relative_to(data_dir) ))
         if not src_file.exists():
             if src_file.suffix == ".gz":
                 if src_file.with_suffix("").exists():
@@ -131,11 +130,11 @@ def prepare_www_files(source, target, env) -> None:
 
         # do we have a minifier for the given suffix ?
         cmd, suffix = get_minifier(src_file.suffix)
-        dest_file = data_dir / src_file.relative_to(data_src_dir)
+        dest_file = Path(os.path.join(data_dir , src_file.relative_to(data_src_dir)))
 
         # yes: modify the destination file suffix
         if cmd:
-            dest_file = dest_file.with_name(dest_file.name + suffix)
+            dest_file = Path(dest_file.with_name(dest_file.name + suffix))
 
         # file has been modified ?
         if dest_file.is_file():
@@ -147,8 +146,8 @@ def prepare_www_files(source, target, env) -> None:
         if cmd:
             cmd = cmd.format(S=src_file.as_posix(), D=dest_file.as_posix())
             subprocess.check_call(cmd, shell=True)
-            trace(f"  minified:   {src_file.relative_to(data_src_dir)} → {dest_file.relative_to(data_dir)}")
-
+            trace(f"  minified:   {src_file.relative_to(data_src_dir)} -> {dest_file.relative_to(data_dir)}")
+            
             if src_file.suffix == ".html":
                 make_restrict(data_src_dir, src_file, data_dir)
 

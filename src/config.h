@@ -100,6 +100,9 @@
 #define CFG_FORM_HTTPREQ_SEUIL_HAUT FPSTR("httpreq_seuil_haut")
 #define CFG_FORM_HTTPREQ_SEUIL_BAS FPSTR("httpreq_seuil_bas")
 
+#define CFG_FORM_RELAYS_0 FPSTR("relays-0")
+#define CFG_FORM_RELAYS_1 FPSTR("relays-1")
+
 // Config for emoncms
 // 128 Bytes
 struct EmoncmsConfig
@@ -145,6 +148,22 @@ struct HttpreqConfig
     uint8_t filler[61];
 } __attribute__((packed));
 
+struct RelayConfig {
+    union {
+        uint8_t all;
+        struct {
+            uint8_t dummy : 1;
+            uint8_t state : 1;
+            uint8_t hcjb : 1;
+            uint8_t hpjb : 1;
+            uint8_t hcjw : 1;
+            uint8_t hpjw : 1;
+            uint8_t hcjr : 1;
+            uint8_t hpjr : 1;
+        }; 
+    } u;
+} __attribute__((packed));
+
 // Config saved into eeprom
 // 1024 bytes total including CRC
 struct Config
@@ -163,6 +182,7 @@ struct Config
     EmoncmsConfig emoncms;                  // Emoncms configuration
     JeedomConfig jeedom;                    // jeedom configuration
     HttpreqConfig httpreq;                  // HTTP request
+    RelayConfig relays[2];                  // Relay config   
     uint16_t crc;                           // CRC de validité du bloc de config
 } __attribute__((packed));
 
@@ -179,3 +199,4 @@ void config_get_json(String &r, bool restricted);
 void config_handle_form(ESP8266WebServer &server, bool restricted);
 void config_setup();
 void config_reset();
+int validate_int(const String &value, int a, int b, int d);

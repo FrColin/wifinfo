@@ -1,5 +1,9 @@
 // module téléinformation client
 // rene-d 2020
+#include <Arduino.h>
+#include <ArduinoOTA.h>
+#include <ESP8266mDNS.h>
+
 
 #include "wifinfo.h"
 #include "timesync.h"
@@ -12,10 +16,9 @@
 #include "teleinfo.h"
 #include "tic.h"
 #include "webserver.h"
+#include "bt_relay.h"
 
-#include <Arduino.h>
-#include <ArduinoOTA.h>
-#include <ESP8266mDNS.h>
+
 
 void setup()
 {
@@ -42,10 +45,13 @@ __      ___  __ ___       __
 
     // chargement de la conf depuis l'EEPROM
     config_setup();
-
+    
     // connexion au Wi-Fi ou activation de l'AP
     sys_wifi_connect();
 
+    // remise des relay dans l'etat 
+    bt_relay_setup();
+    
     // initilisation du filesystem
     fs_setup();
 
@@ -86,6 +92,7 @@ void loop()
 #endif
 
     webserver_loop();
+    bt_relay_loop();
 
 #ifdef ENABLE_OTA
     ArduinoOTA.handle();

@@ -8,5 +8,5 @@ Import("env")
 
 
 env.Replace(
-    MKSPIFFSTOOL="./mkerfs32.py"
+    MKSPIFFSTOOL='C:\\Users\\FRC\\.platformio\\python37\\python" "' + env.get("PROJECT_DIR") + '\mkerfs32.py'
 )

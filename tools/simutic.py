@@ -39,6 +39,7 @@ class SimuTic:
         self._adps = 0
         self._adco = "012345678123"
         self._pseuil = 0
+        self.periode = "B"
 
     def bascule(self, quoi="T"):
         """
@@ -53,6 +54,12 @@ class SimuTic:
                 self.adps = self.isousc + 1
         elif quoi == "P":
             self._pseuil = 4000 - self._pseuil
+        elif quoi == "B":
+            self.periode = quoi
+        elif quoi == "W":
+            self.periode = quoi
+        elif quoi == "R":
+            self.periode = quoi
 
     @property
     def timestamp(self):
@@ -153,11 +160,13 @@ class SimuTic:
         """
         Retourne la Période Tarifaire En Cours
         """
-        if self.heures_creuses:
-            return "HC"
-        else:
-            return "HP"
-
+        if self.periode == "B":
+            return "HCJB" if self.heures_creuses else "HPJB"
+        elif self.periode == "W":
+            return  "HCJW" if self.heures_creuses else "HPJW"
+        elif self.periode == "R":
+            return  "HCJR" if self.heures_creuses else "HPJR"
+       
     @property
     def adps_raw(self):
         """

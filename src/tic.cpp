@@ -10,6 +10,7 @@
 #include "sse.h"
 #include "strncpy_s.h"
 #include "teleinfo.h"
+#include "bt_relay.h"
 #include <PolledTimeout.h>
 
 // les différente notifications que httpreq peut envoyer
@@ -50,6 +51,7 @@ static void http_notif_seuils();
 static void http_notif_adps();
 static void jeedom_notif();
 static void emoncms_notif();
+static bool relay_notif_periode_en_cours();
 
 void tic_decode(int c)
 {
@@ -87,9 +89,10 @@ void tic_decode(int c)
 // appelée chaque fois qu'une trame de teleinfo valide est reçue
 void tic_notifs()
 {
+    bool change_ptec = relay_notif_periode_en_cours();
     if (config.httpreq.host[0] != 0)
     {
-        if (config.httpreq.trigger_ptec)
+        if (config.httpreq.trigger_ptec && change_ptec)
         {
             http_notif_periode_en_cours();
         }
@@ -376,29 +379,36 @@ static void http_notif(const char *notif)
         http_request(config.httpreq.host, config.httpreq.port, uri);
     }
 }
-
-static void http_notif_periode_en_cours()
+static bool relay_notif_periode_en_cours()
 {
     const char *PTEC = tinfo.get_value("PTEC");
     if (PTEC == NULL)
     {
-        return;
+        return false;
     }
 
     // a-t-on un changement de période ?
     if (strncmp(periode_en_cours, PTEC, sizeof(periode_en_cours)) != 0)
     {
         strncpy_s(periode_en_cours, PTEC, sizeof(periode_en_cours) - 1);
-        if (init_periode_en_cours)
-        {
-            // premier passage: on mémorise la période courante
-            init_periode_en_cours = false;
-        }
-        else
-        {
-            http_notif(HTTP_NOTIF_TYPE_PTEC);
-        }
+        relay_notif_ptec(PTEC);
+        return true;
     }
+    return false;
+}
+static void http_notif_periode_en_cours()
+{
+    
+    if (init_periode_en_cours)
+    {
+        // premier passage: on mémorise la période courante
+        init_periode_en_cours = false;
+    }
+    else
+    {
+        http_notif(HTTP_NOTIF_TYPE_PTEC);
+    }
+    
 }
 
 static void http_notif_adps()

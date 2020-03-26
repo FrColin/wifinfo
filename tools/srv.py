@@ -79,6 +79,13 @@ def tinfo_json():
     d = tic.json_array()
     return d, app.config["JSONIFY_MIMETYPE"]
 
+@app.route("/relays.json")
+def relays_json():
+    d = [
+        {"re":0, "hcjb":0, "hpjb":0, "hcjw":0,"hpjw":0, "hcjr":0, "hpjr":0, "switch":0},
+        {"re":1, "hcjb":0, "hpjb":0, "hcjw":1,"hpjw":1, "hcjr":1, "hpjr":1, "switch":1}]
+    return flask.jsonify(d), app.config["JSONIFY_MIMETYPE"]
+
 
 @app.route("/spiffs.json")
 def spiffs_json():
@@ -175,6 +182,11 @@ def config_form():
         print(f"{name} = {value}")
     return "OK"
 
+@app.route("/relays_form.json", methods=["POST"])
+def relays_form():
+    for name, value in flask.request.values.items():
+        print(f"{name} = {value}")
+    return "OK"
 
 @app.route("/tinfo.php", methods=["GET", "POST"])
 def tinfo_php():
@@ -183,6 +195,11 @@ def tinfo_php():
     print("data =", json.dumps(flask.request.json, indent=4))
     return "OK"
 
+@app.route("/switch", methods=["POST"])
+def switch_change():
+    for name, value in flask.request.values.items():
+        print(f"{name} = {value}")
+    return "OK"
 
 @app.route("/sse/json", methods=["GET", "POST"])
 @app.route("/tic", methods=["GET", "POST"])

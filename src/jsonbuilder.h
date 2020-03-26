@@ -102,6 +102,15 @@ public:
         s.concat("[");
     }
 
+    void append(const char *value)
+    {
+        s.concat(value);
+        s.concat(",");
+    }
+    void append(const String &value)
+    {
+        append(value.c_str());
+    }
     template <typename T>
     void append(const T *name, const char *value)
     {

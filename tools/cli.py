@@ -11,10 +11,18 @@
 import atexit
 import codecs
 import datetime
-import fcntl
 import sys
-import termios
 import threading
+import os
+import time
+# Windows
+if os.name == 'nt':
+    import msvcrt
+
+# Posix (Linux, OS X)
+else:
+    import fcntl
+    import termios
 
 import click
 import serial
@@ -46,6 +54,87 @@ class Periodic(threading.Thread):
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+class KBHit:
+
+    def __init__(self):
+        '''Creates a KBHit object that you can call to do various keyboard things.
+        '''
+
+        if os.name == 'nt':
+            pass
+
+        else:
+
+            # Save the terminal settings
+            self.fd = sys.stdin.fileno()
+            self.new_term = termios.tcgetattr(self.fd)
+            self.old_term = termios.tcgetattr(self.fd)
+
+            # New terminal setting unbuffered
+            self.new_term[3] = (self.new_term[3] & ~termios.ICANON & ~termios.ECHO)
+            termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.new_term)
+
+            # Support normal-terminal reset at exit
+            atexit.register(self.set_normal_term)
+
+
+    def set_normal_term(self):
+        ''' Resets to normal terminal.  On Windows this is a no-op.
+        '''
+
+        if os.name == 'nt':
+            pass
+
+        else:
+            termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.old_term)
+
+
+    def getch(self):
+        ''' Returns a keyboard character after kbhit() has been called.
+            Should not be called in the same program as getarrow().
+        '''
+
+        s = ''
+
+        if os.name == 'nt':
+            return msvcrt.getch().decode('utf-8')
+
+        else:
+            return sys.stdin.read(1)
+
+
+    def getarrow(self):
+        ''' Returns an arrow-key code after kbhit() has been called. Codes are
+        0 : up
+        1 : right
+        2 : down
+        3 : left
+        Should not be called in the same program as getch().
+        '''
+
+        if os.name == 'nt':
+            msvcrt.getch() # skip 0xE0
+            c = msvcrt.getch()
+            vals = [72, 77, 80, 75]
+
+        else:
+            c = sys.stdin.read(3)[2]
+            vals = [65, 67, 66, 68]
+
+        return vals.index(ord(c.decode('utf-8')))
+
+
+    def kbhit(self):
+        ''' Returns True if keyboard character was hit, False otherwise.
+        '''
+        if os.name == 'nt':
+            return msvcrt.kbhit()
+
+        else:
+            dr,dw,de = select([sys.stdin], [], [], 0)
+            return dr != []
+
+
 class ConsoleBase(object):
     """OS abstraction for console (input/output codec, no echo)"""
 
@@ -90,12 +179,14 @@ class ConsoleBase(object):
     def __exit__(self, *args, **kwargs):
         self.setup()
 
-
 class Console(ConsoleBase):
     def __init__(self):
         super(Console, self).__init__()
         self.fd = sys.stdin.fileno()
-        self.old = termios.tcgetattr(self.fd)
+        if os.name == 'nt':
+            self.kb = KBHit()
+        else:
+            self.old = termios.tcgetattr(self.fd)
         atexit.register(self.cleanup)
         if sys.version_info < (3, 0):
             self.enc_stdin = codecs.getreader(sys.stdin.encoding)(sys.stdin)
@@ -103,26 +194,35 @@ class Console(ConsoleBase):
             self.enc_stdin = sys.stdin
 
     def setup(self):
-        new = termios.tcgetattr(self.fd)
-        new[3] = new[3] & ~termios.ICANON & ~termios.ECHO & ~termios.ISIG
-        new[6][termios.VMIN] = 1
-        new[6][termios.VTIME] = 0
-        termios.tcsetattr(self.fd, termios.TCSANOW, new)
+        if os.name != 'nt':
+            new = termios.tcgetattr(self.fd)
+            new[3] = new[3] & ~termios.ICANON & ~termios.ECHO & ~termios.ISIG
+            new[6][termios.VMIN] = 1
+            new[6][termios.VTIME] = 0
+            termios.tcsetattr(self.fd, termios.TCSANOW, new)
 
     def getkey(self):
-        c = self.enc_stdin.read(1)
+        if os.name == 'nt':
+            while not self.kb.kbhit():
+                time.sleep(.050)
+            c = self.kb.getch()    
+        else:
+            c = self.enc_stdin.read(1)
         if c == chr(0x7F):
             c = chr(8)  # map the BS key (which yields DEL) to backspace
         return c
 
     def cancel(self):
-        fcntl.ioctl(self.fd, termios.TIOCSTI, b"\0")
+        if os.name != 'nt':
+            fcntl.ioctl(self.fd, termios.TIOCSTI, b"\0")
 
     def cleanup(self):
-        termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.old)
+        if os.name != 'nt':
+            termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.old)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 
 class Transform(object):
@@ -378,7 +478,7 @@ class Miniterm(object):
                 elif c == chr(0x19):  # Ctrl-Y
                     self.pause_tic = not self.pause_tic
 
-                elif c == chr(0x10):  # Ctrl-P
+                elif c == chr(0x08):  # Ctrl-H
                     tic.bascule("T")
                     self.send_tic()
 
@@ -390,6 +490,18 @@ class Miniterm(object):
                     tic.bascule("P")
                     self.send_tic()
 
+                elif c == chr(0x02):  # Ctrl-B
+                    tic.bascule("B")
+                    self.send_tic()
+                
+                elif c == chr(0x17):  # Ctrl-W
+                    tic.bascule("W")
+                    self.send_tic()
+                
+                elif c == chr(0x12):  # Ctrl-R
+                    tic.bascule("R")
+                    self.send_tic()
+                
                 elif c == chr(0x03):  # Ctrl-C
                     self.stop()  # exit app
                     break

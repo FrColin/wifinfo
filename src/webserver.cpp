@@ -1,6 +1,9 @@
 // module téléinformation client
 // rene-d 2020
 
+#include <Arduino.h>
+#include <ESP8266WebServer.h>
+
 #include "wifinfo.h"
 #include "webserver.h"
 #include "config.h"
@@ -9,9 +12,9 @@
 #include "sse.h"
 #include "sys.h"
 #include "tic.h"
+#include "relay_config.h"
+#include "bt_relay.h"
 
-#include <Arduino.h>
-#include <ESP8266WebServer.h>
 
 #include "emptyserial.h"
 
@@ -151,14 +154,27 @@ void webserver_setup()
             config_handle_form(server, access == RESTRICTED);
         }
     });
+    server.on(F("/relays_form.json"), [] {
+        AccessType access = webserver_get_auth();
+        if (access != NO_ACCESS)
+        {
+            relays_handle_form(server, access == RESTRICTED);
+        }
+    });
     server.on(F("/json"), server_send_json<tic_get_json_dict>);
     server.on(F("/tinfo.json"), server_send_json<tic_get_json_array>);
     server.on(F("/emoncms.json"), server_send_json<tic_emoncms_data>);
     server.on(F("/system.json"), server_send_json<sys_get_info_json>);
     server.on(F("/config.json"), server_send_json<config_get_json>);
+    server.on(F("/relays.json"), server_send_json<relays_get_json_array>);
     server.on(F("/spiffs.json"), server_send_json<fs_get_json>);
     server.on(F("/wifiscan.json"), server_send_json<sys_wifi_scan_json>);
 
+    server.on(F("/switch"), [] {
+        String re = server.arg("switch");
+        String val = server.arg("on");
+        bt_relay_set(atoi(re.c_str()),  val == "true");
+    });
     server.on(F("/factory_reset"), [] {
         if (webserver_access_full())
         {

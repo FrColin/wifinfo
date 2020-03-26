@@ -282,7 +282,7 @@ int sys_wifi_connect()
             WiFi.begin(config.ssid);
         }
 
-        timeout = 50; // 50 * 200 ms = 5 sec time out
+        timeout = 50; // 50 * 200 ms = 10s sec time out
         // 200 ms loop
         while (((ret = WiFi.status()) != WL_CONNECTED) && timeout)
         {

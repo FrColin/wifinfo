@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/wifinfo.css">
+    <link rel="stylesheet" href="css/custom.css">
     <script src="js/wifinfo.js"></script>
     <script src="js/gauge.min.js"></script>
 
@@ -16,6 +17,7 @@
             -webkit-user-select: none;
             -ms-user-select: none;
         }
+
     </style>
 
     <title>WifInfo</title>
@@ -29,7 +31,8 @@
         <ul class="nav nav-tabs" id="myTab">
             <!-- glyph bootstrap:  https://getbootstrap.com/docs/3.3/components/ -->
             <li><a href="#tab_gauges" data-toggle="tab"><span class="glyphicon glyphicon-dashboard">&nbsp;</span>Compteur&nbsp;</span></a></li>
-            <li><a href="#tab_tinfo" data-toggle="tab"><span class="glyphicon glyphicon-flash">&nbsp;</span>Téléinformation&nbsp;<span class="badge"
+            <li><a href="#tab_relays" data-toggle="tab"><span class="glyphicon glyphicon-flash">&nbsp;</span>Relais&nbsp;<span class="badge" id="relays"></span></a></li>
+			<li><a href="#tab_tinfo" data-toggle="tab"><span class="glyphicon glyphicon-flash">&nbsp;</span>Téléinformation&nbsp;<span class="badge"
                         id="scharge"></span></a></li>
             <li><a href="#tab_sys" data-toggle="tab"><span class="glyphicon glyphicon-cog">&nbsp;</span>Système</a></li>
             <li><a href="#tab_cfg" data-toggle="tab"><span class="glyphicon glyphicon-wrench">&nbsp;</span>Configuration</a></li>
@@ -114,6 +117,48 @@
                 </div>
             </div> <!-- tab gauges -->
 
+            	<!-- tab Relays -->
+				<div class="tab-pane fade" id="tab_relays">
+                    <form class="form-horizontal row-border" method="post" data-toggle="validator" id="frm_relays" action="">
+						<input type="hidden" name="save" value="1">
+					<div class="panel-heading">
+						<h3 class="panel-title">Changement etat des Relais suivant peridode Tempo</h3>
+                    </div>
+                    
+                    <table 	data-toggle="table" 
+									class="table table-striped table-condensed" 
+									data-show-refresh="true" 
+									id="tab_relays_data" 
+									data-select-item-name="toolbar2">
+						<thead>
+							<tr>
+                                <th data-align="center" rowspan="2" style="vertical-align: middle;" data-field="re" >Tempo</th>
+                                <th data-align="center" colspan="2">BLEU</th>
+								<th data-align="center" colspan="2">BLANC</th>
+								<th data-align="center" colspan="2">ROUGE</th>
+								<th data-align="center" rowspan="2" data-field="switch" data-formatter="relayFormatter">Etat</th>
+							</tr>
+							<tr>
+                                <th data-field="hcjb" data-formatter="relayFormatter" data-align="center">Creuse</th>
+								<th data-field="hpjb" data-formatter="relayFormatter" data-align="center">Pleine</th>
+								<th data-field="hcjw" data-formatter="relayFormatter" data-align="center">Creuse</th>
+								<th data-field="hpjw" data-formatter="relayFormatter" data-align="center">Pleine</th>
+								<th data-field="hcjr" data-formatter="relayFormatter" data-align="center">Creuse</th>
+                                <th data-field="hpjr" data-formatter="relayFormatter" data-align="center">Pleine</th>
+                                
+							</tr>
+						</thead>
+						
+					</table>
+					<div class="panel-footer">
+						<div class="text-center">
+							<div class="btn-group">
+								<button type="submit" class="btn btn-default btn-warning">Enregistrer</button>
+							</div>
+						</div>
+					</div>
+				</form>
+				</div> <!-- tab pane Relays-->
 
             <!-- tab teleinfo -->
             <div class="tab-pane fade" id="tab_tinfo">
@@ -709,7 +754,19 @@
             };
             return {};
         }
-
+        function relayFormatter(value, row, index) {
+                var name = this.field + '-' + index;
+                return '\
+                    <div >\
+                        <label class="switch">\
+                          <input type="checkbox" name="'+name +'" id="'+name +'" ' + (value  ? 'checked="checked"' : '') + ' >\
+                          <span class="slider round"></span>\
+                        </label>\
+                    </div>\
+                    ';
+                //return '<input type=checkbox name="'+name +'"' + (value  ? 'checked="checked"' : '') + '>';
+		}
+			
         function labelFormatter(value, row) {
             // var flags = parseInt(row.fl, 10);
             // if (typeof counters[value] === 'undefined')
@@ -872,7 +929,10 @@
                     url: '/tinfo.json'
                 });
 
-            } else if (target == '#tab_sys') {
+            } else if (target=='#tab_relays') {
+					$('#tab_relays_data').bootstrapTable('refresh',{silent:true, url:'/relays.json'});  
+            } 
+            else if (target == '#tab_sys') {
                 $('#tab_sys_data').bootstrapTable('refresh', {
                     silent: true,
                     url: '/system.json'
@@ -926,6 +986,17 @@
                     })
                 }, 5000);
         });
+        $('#tab_relays').on('load-success.bs.table', function (e, data) {
+            console.log('#tab_relays loaded');
+            $('#switch-0').change(function () {
+                    $.post('/switch',{"switch":0, "on": this.checked});
+                    return false;
+                });
+            $('#switch-1').change(function () {
+                $.post('/switch',{"switch":1, "on": this.checked});
+                return false;
+            });
+        });
 
         $('#tab_sys_data').on('load-success.bs.table', function (e, data) {
             console.log('#tab_sys_data loaded');
@@ -968,6 +1039,7 @@
             waitReboot();
             return false;
         });
+        
 
         $(document)
             .on('change', '.btn-file :file', function () {
@@ -975,6 +1047,7 @@
                     numFiles = input.get(0).files ? input.get(0).files.length : 1,
                     label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
                 input.trigger('fileselect', [numFiles, label]);
+                
             })
             .on('show.bs.collapse', '.panel-collapse', function () {
                 var $span = $(this).parents('.panel').find('span.pull-right.glyphicon');
@@ -992,6 +1065,21 @@
                 console.log("Form Submit");
 
                 $.post('/config_form.json', $("#frm_config").serialize())
+                    .done(function (msg, textStatus, xhr) {
+                        Notify(2, 'ok', 'success', 'Enregistrement effectué', xhr.status + ' ' + msg);
+                    })
+                    .fail(function (xhr, textStatus, errorThrown) {
+                        Notify(4, 'remove', 'danger', 'Erreur lors de l\'enregistrement', xhr.status + ' ' + errorThrown);
+                    });
+            }
+        });
+        $('#frm_relays').validator().on('submit', function (e) {
+            // everything looks good!
+            if (!e.isDefaultPrevented()) {
+                e.preventDefault();
+                console.log("Form Submit");
+
+                $.post('/relays_form.json', $("#frm_relays").serialize())
                     .done(function (msg, textStatus, xhr) {
                         Notify(2, 'ok', 'success', 'Enregistrement effectué', xhr.status + ' ' + msg);
                     })

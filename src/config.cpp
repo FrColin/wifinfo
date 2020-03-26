@@ -307,6 +307,12 @@ void config_show()
     Serial.print(F("seuil haut: "));
     Serial.println(config.httpreq.seuil_haut);
 
+    Serial.println("\r\n===== Relais"); 
+    Serial.print(F("relai 0  state:"));
+    Serial.println(config.relays[0].u.all,BIN); 
+    Serial.print(F("relai 1  state:"));
+    Serial.println(config.relays[1].u.all, BIN); 
+    
     Serial.flush();
 }
 
@@ -357,9 +363,11 @@ void config_get_json(String &r, bool restricted)
     js.append(CFG_FORM_HTTPREQ_TRIGGER_SEUILS, config.httpreq.trigger_seuils);
     js.append(CFG_FORM_HTTPREQ_SEUIL_BAS, config.httpreq.seuil_bas);
     js.append(CFG_FORM_HTTPREQ_SEUIL_HAUT, config.httpreq.seuil_haut, true);
+    
+    js.append(CFG_FORM_RELAYS_0, config.relays[0].u.all);
+    js.append(CFG_FORM_RELAYS_1,  config.relays[0].u.all);
 }
-
-static int validate_int(const String &value, int a, int b, int d)
+int validate_int(const String &value, int a, int b, int d)
 {
     int v = value.toInt();
     if (a <= v && v <= b)
