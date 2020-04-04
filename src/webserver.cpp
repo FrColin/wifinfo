@@ -166,7 +166,9 @@ void webserver_setup()
 #endif
     server.on(F("/json"), server_send_json<tic_get_json_dict>);
     server.on(F("/tinfo.json"), server_send_json<tic_get_json_array>);
+#ifdef ENABLE_EMONCMS
     server.on(F("/emoncms.json"), server_send_json<tic_emoncms_data>);
+#endif
     server.on(F("/system.json"), server_send_json<sys_get_info_json>);
     server.on(F("/config.json"), server_send_json<config_get_json>);
     server.on(F("/spiffs.json"), server_send_json<fs_get_json>);
@@ -220,7 +222,11 @@ void webserver_setup()
         }
         else if (access == FULL)
         {
+#if defined( ENABLE_JEEDOM) || defined(ENABLE_EMONCMS)
+            ok = webserver_handle_read(F("/index.full.html"));
+#else
             ok = webserver_handle_read(F("/index.html"));
+#endif
         }
 
         // authentifié mais pas de fichier html trouvé: on redirige vers /update

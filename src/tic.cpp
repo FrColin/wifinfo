@@ -36,8 +36,13 @@ static Seuil seuil_en_cours = BAS;
 static bool etat_adps = false;
 
 static esp8266::polledTimeout::periodicMs timer_http(esp8266::polledTimeout::periodicMs::neverExpires);
+#ifdef ENABLE_EMONCMS
 static esp8266::polledTimeout::periodicMs timer_emoncms(esp8266::polledTimeout::periodicMs::neverExpires);
+#endif
+#ifdef ENABLE_JEEDOM
 static esp8266::polledTimeout::periodicMs timer_jeedom(esp8266::polledTimeout::periodicMs::neverExpires);
+#endif
+
 static esp8266::polledTimeout::periodicMs timer_sse(esp8266::polledTimeout::periodicMs::neverExpires);
 
 Teleinfo tinfo;
@@ -49,9 +54,12 @@ static void http_notif(const char *notif);
 static void http_notif_periode_en_cours();
 static void http_notif_seuils();
 static void http_notif_adps();
+#ifdef ENABLE_JEEDOM
 static void jeedom_notif();
+#endif
+#ifdef ENABLE_EMONCMS
 static void emoncms_notif();
-
+#endif
 static bool relay_notif_periode_en_cours();
 
 
@@ -119,17 +127,18 @@ void tic_notifs()
             http_notif(HTTP_NOTIF_TYPE_MAJ);
         }
     }
-
+#ifdef ENABLE_JEEDOM
     if (timer_jeedom)
     {
         jeedom_notif();
     }
-
+#endif
+#ifdef ENABLE_EMONCMS
     if (timer_emoncms)
     {
         emoncms_notif();
     }
-
+#endif
     if (timer_sse && (sse_clients.count() != 0))
     {
         String data;
@@ -151,7 +160,7 @@ void tic_make_timers()
         timer_http.reset(config.httpreq.freq * 1000);
         Serial.printf_P(PSTR("timer_http enabled, freq=%d s\n"), config.httpreq.freq);
     }
-
+#ifdef ENABLE_JEEDOM
     // jeedom
     if ((config.jeedom.freq == 0) || (config.jeedom.host[0] == 0) || (config.jeedom.port == 0))
     {
@@ -163,7 +172,8 @@ void tic_make_timers()
         timer_jeedom.reset(config.jeedom.freq * 1000);
         Serial.printf_P(PSTR("timer_jeedom enabled, freq=%d s\n"), config.jeedom.freq);
     }
-
+#endif
+#ifdef ENABLE_EMONCMS
     // emoncms
     if ((config.emoncms.freq == 0) || (config.emoncms.host[0] == 0) || (config.emoncms.port == 0))
     {
@@ -175,7 +185,7 @@ void tic_make_timers()
         timer_emoncms.reset(config.emoncms.freq * 1000);
         Serial.printf_P(PSTR("timer_emoncms enabled, freq=%d s\n"), config.emoncms.freq);
     }
-
+#endif
     // connexions SSE
     if (config.sse_freq == 0)
     {
@@ -473,6 +483,7 @@ static void http_notif_seuils()
     }
 }
 
+#ifdef ENABLE_JEEDOM
 // Do a http post to jeedom server
 static void jeedom_notif()
 {
@@ -512,7 +523,9 @@ static void jeedom_notif()
 
     http_request(config.jeedom.host, config.jeedom.port, url);
 }
+#endif
 
+#ifdef ENABLE_EMONCMS
 // construct the JSON (without " ???) part of emoncms url
 void tic_emoncms_data(String &url, bool restricted __attribute__((unused)))
 {
@@ -688,6 +701,7 @@ static void emoncms_notif()
     // And submit all to emoncms
     http_request(config.emoncms.host, config.emoncms.port, url);
 }
+#endif
 
 void tic_dump()
 {

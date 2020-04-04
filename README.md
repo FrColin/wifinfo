@@ -27,7 +27,13 @@ Ce projet est la fusion de développements réalisés en vue du remplacement d'u
 -   Exemple de stack [InfluxDB](https://www.influxdata.com) + [Grafana](https://grafana.com) pour la visualisation des données (avec sonde Python et client SSE)
 -   Utilisation de [PlatformIO](https://platformio.org) comme environnement de développement
 
+ Adaptation a une version TEMPO, et platformio sur Windows
+ Gestion d'une platform 2CH Relay type https://www.hagensieker.com/wordpress/2019/02/21/hacking-unknown-2-channel-relay-with-tasmota/
+ gestion des deux relays simpliste pour reprendre la configuration des contacts C1C2 C3C4 des compteurs Electronique historique.
+ le C3C4 ayant disparu des compteurs Linky.
+
 Les notifications jeedom/emoncms ne sont pas testées.
+mise en compilation conditionnelle de jeedom et emoncms.
 
 ## Références
 
@@ -77,6 +83,8 @@ Exemple: `/update.php?ptec=$PTEC&conso=~HCHC~+~HCHP~&id=$chipid` ⇒ `/update.ph
 -   <http://wifinfo/system.json> : état du système, utilisé par l'onglet Système de l'interface
 -   <http://wifinfo/config.json> : état du système, utilisé par l'onglet Configuration de l'interface
 -   <http://wifinfo/wifiscan.json> : liste des réseaux Wi-Fi, utilisé par l'onglet Configuration de l'interface
+-   <http://wifinfo/relays.json> : gestion des relais;
+-   <http://wifinfo/switch">: etat et modification des relays 
 
 ### Autres requêtes
 
