@@ -154,6 +154,8 @@ void webserver_setup()
             config_handle_form(server, access == RESTRICTED);
         }
     });
+
+#ifdef ENABLE_RELAY
     server.on(F("/relays_form.json"), [] {
         AccessType access = webserver_get_auth();
         if (access != NO_ACCESS)
@@ -161,20 +163,25 @@ void webserver_setup()
             relays_handle_form(server, access == RESTRICTED);
         }
     });
+#endif
     server.on(F("/json"), server_send_json<tic_get_json_dict>);
     server.on(F("/tinfo.json"), server_send_json<tic_get_json_array>);
     server.on(F("/emoncms.json"), server_send_json<tic_emoncms_data>);
     server.on(F("/system.json"), server_send_json<sys_get_info_json>);
     server.on(F("/config.json"), server_send_json<config_get_json>);
-    server.on(F("/relays.json"), server_send_json<relays_get_json_array>);
     server.on(F("/spiffs.json"), server_send_json<fs_get_json>);
     server.on(F("/wifiscan.json"), server_send_json<sys_wifi_scan_json>);
 
+ #ifdef ENABLE_RELAY
+    server.on(F("/relays.json"), server_send_json<relays_get_json_array>);
     server.on(F("/switch"), [] {
         String re = server.arg("switch");
         String val = server.arg("on");
         bt_relay_set(atoi(re.c_str()),  val == "true");
+        server.sendHeader("Cache-Control", "max-age=86400");
+        server.send(200, mime::mimeTable[mime::txt].mimeType, "OK");
     });
+ #endif
     server.on(F("/factory_reset"), [] {
         if (webserver_access_full())
         {

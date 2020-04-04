@@ -129,6 +129,9 @@ void sys_get_info_json(String &response, bool restricted)
 #ifdef ENABLE_CPULOAD
         flags += F(" CPULOAD");
 #endif
+#ifdef ENABLE_RELAY
+        flags += F(" RELAY");
+#endif
         js.append(F("Options"), flags);
 
         js.append(F("SDK Version"), system_get_sdk_version());

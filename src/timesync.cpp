@@ -156,7 +156,7 @@ void time_setup()
 
     // NTP servers may be overriden by your DHCP server for a more local one
     // (see below)
-    configTime(MYTZ, "pool.ntp.org");
+    configTime(MYTZ, "192.168.1.254");
 
     // OPTIONAL: disable obtaining SNTP servers from DHCP
     //sntp_servermode_dhcp(0); // 0: disable obtaining SNTP servers from DHCP (enabled by default)

@@ -13,7 +13,7 @@
 #define EOT 0x04 // end of transmission
 #define LF 0x0A  // line feed
 #define CR 0x0D  // carriage return
-
+#define SPACE 0x20  // separateur espace
 /*
 <STX>
 <LF>ADCO 111111111111 #<CR>
@@ -43,6 +43,7 @@ public:
     static const size_t MAX_FRAME_SIZE = 350;
 
 protected:
+    uint8_t accumulated_checksum = 0;  
     char frame_[MAX_FRAME_SIZE]; // buffer de mémorisation de la trame
     size_t size_{0};             // offset courant (i.e. longueur de la trame)
     timeval timestamp_{0, 0};    // date du début de la trame
@@ -72,7 +73,14 @@ public:
 
         if (!is_empty())
         {
-            uint32_t wh = get_value_int("HCHP") + get_value_int("HCHC");
+            // uint32_t wh = get_value_int("HCHP") + get_value_int("HCHC");
+            uint32_t wh = 
+                      get_value_int("BBRHCJB") + 
+                      get_value_int("BBRHPJB") +
+                      get_value_int("BBRHCJW") +
+                      get_value_int("BBRHPJW") +
+                      get_value_int("BBRHCJR") +
+                      get_value_int("BBRHPJR");
 
             if (conso0_.date_ms == 0)
             {
@@ -424,10 +432,12 @@ public:
         return size_ != 0;
     }
 
-    void put(int c)
+    void put(char c)
     {
+        // be sure 7 bits only
+        c &= 0x7F;
         size_ = 0;
-
+        //Serial.printf("----> etat %d %d '%c'\n",state_, offset_, c);
         if (c == STX)
         {
             // début de trame, on réinitialise et on attend un LF (ou un ETX à la rigueur...)
@@ -437,6 +447,7 @@ public:
         }
         else if (c == LF)
         {
+            accumulated_checksum = 0;
             // début de valeur: on doit être dans l'état adéquant
             if (state_ == wait_lf_or_etx)
             {
@@ -461,27 +472,12 @@ public:
                 {
                     if (offset_start_group_ < offset_ - 3)
                     {
-                        // séparateur après la donnée
-                        char sep = frame_[offset_ - 2];
-
+                        
                         int checksum = frame_[offset_ - 1];
-
-                        // calcul du checksum sur étiquette-séparateur-donnée
-                        // (mode de calcul n°1, cf. doc Enedis)
-                        int sum = 0;
-                        for (size_t i = offset_start_group_; i < offset_ - 2; ++i)
-                        {
-                            sum += frame_[i];
-
-                            if (frame_[i] == sep)
-                            {
-                                frame_[i] = 0;
-                                sep = -1; // valeur impossible, empêche un deuxième séparateur
-                            }
-                        }
-                        sum = (sum & 63) + 32;
-
-                        if (sum == checksum)
+	                    accumulated_checksum -= checksum;
+                        bool good_frame = ((accumulated_checksum & 0x3F) == (checksum & 0x3F));
+                
+                        if (good_frame)
                         {
                             --offset_; // supprime le checksum
 
@@ -494,29 +490,35 @@ public:
                             frame_[offset_ - 1] = 0; // écrase le dernier séparateur avec 0
 
                             state_ = wait_lf_or_etx;
+                            //Serial.printf("frame ok %s\n", &frame_[offset_start_group_] );
                         }
                         else
                         {
                             // mauvais checksum: reinit
                             state_ = wait_stx;
+                            //Serial.printf("mauvais chechsum %02x expected %02x\n",accumulated_checksum,checksum );
                         }
                     }
                     else
                     {
                         // pas assez de caractères: reinit
                         state_ = wait_stx;
+                        //Serial.println("pas assez de caractères");
                     }
                 }
                 else
                 {
                     // frame trop longue: reinit
                     state_ = wait_stx;
+                    //Serial.println("frame trop longue");
                 }
             }
             else
             {
+                //Serial.printf("mauvais etat %d %d %c\n",state_, offset_, c);
                 // mauvais état: reinit
                 state_ = wait_stx;
+                
             }
         }
         else if (c == ETX)
@@ -545,7 +547,8 @@ public:
             {
                 if (offset_ < MAX_FRAME_SIZE)
                 {
-                    frame_[offset_++] = c;
+                    frame_[offset_++] = (c == SPACE ? '\0' : c) ;
+                    accumulated_checksum += c;
                 }
                 else
                 {

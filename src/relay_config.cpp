@@ -1,3 +1,4 @@
+#ifdef ENABLE_RELAY
 #include "wifinfo.h"
 #include "tic.h"
 #include "config.h"
@@ -122,3 +123,4 @@ void relays_handle_form(ESP8266WebServer &server, bool restricted)
     server.send(ret, mime::mimeTable[mime::txt].mimeType, response);
 
 }
+#endif

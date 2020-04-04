@@ -34,6 +34,12 @@ class SimuTic:
         self.heures_creuses = False
         self._hchc = 52000000
         self._hchp = 49000000
+        self._hcjb = 65808
+        self._hpjb = 112678
+        self._hcjw = 28728
+        self._hpjw = 12592
+        self._hcjr = 57793
+        self._hpjr = 18012
         self._iinst = 0
         self._isousc = 30
         self._adps = 0
@@ -147,6 +153,24 @@ class SimuTic:
         Retourne l'index Heures Pleines
         """
         return round(self._hchp)
+    @property
+    def hcjb_raw(self, text=False):
+            return f"{self._hcjb:09d}"
+    @property
+    def hpjb_raw(self, text=False):
+            return f"{self._hpjb:09d}"
+    @property
+    def hcjw_raw(self, text=False):
+            return f"{self._hcjw:09d}"
+    @property
+    def hpjw_raw(self, text=False):
+            return f"{self._hpjw:09d}"
+    @property
+    def hcjr_raw(self, text=False):
+            return f"{self._hcjr:09d}"
+    @property
+    def hpjr_raw(self, text=False):
+            return f"{self._hpjr:09d}"
 
     @property
     def ptec_raw(self):
@@ -213,11 +237,18 @@ class SimuTic:
         iinst_raw = self.iinst_raw
         tinfo = "\x02"
         tinfo += group("ADCO", self.adco)
-        tinfo += group("OPTARIF", "HC..")
+        tinfo += group("OPTARIF", "BBR(")
         tinfo += group("ISOUSC", self.isousc_raw)
-        tinfo += group("HCHC", self.hchc_raw)
-        tinfo += group("HCHP", self.hchp_raw)
+       # tinfo += group("HCHC", self.hchc_raw)
+       # tinfo += group("HCHP", self.hchp_raw)
+        tinfo += group("BBRHCJB", self.hcjb_raw)
+        tinfo += group("BBRHPJB", self.hpjb_raw)
+        tinfo += group("BBRHCJW", self.hcjw_raw)
+        tinfo += group("BBRHPJW", self.hpjw_raw)
+        tinfo += group("BBRHCJR", self.hcjr_raw)
+        tinfo += group("BBRHPJR", self.hpjr_raw)
         tinfo += group("PTEC", self.ptec_raw)
+        tinfo += group("DEMAIN", "----")
         tinfo += group("IINST", iinst_raw)
         tinfo += group("IMAX", "042")
         tinfo += group("PAPP", self.papp_raw)
@@ -237,10 +268,16 @@ class SimuTic:
         d = {
             "timestamp": self.timestamp,
             "ADCO": self.adco,
-            "OPTARIF": "HC",
+            "OPTARIF": "BBR(",
             "ISOUSC": self.isousc,
-            "HCHC": self.hchc,
-            "HCHP": self.hchp,
+            # "HCHC": self.hchc,
+            # "HCHP": self.hchp,
+            "BBRHCJB": self._hcjb,
+            "BBRHPJB": self._hpjb,
+            "BBRHCJW": self._hcjw,
+            "BBRHPJW": self._hpjw,
+            "BBRHCJR": self._hcjr,
+            "BBRHPJR": self._hpjr,
             "PTEC": self.ptec,
             "IINST": iinst,
             "IMAX": 42,
@@ -260,10 +297,16 @@ class SimuTic:
         d = [
             {"na": "timestamp", "va": self.timestamp},
             {"na": "ADCO", "va": self.adco},
-            {"na": "OPTARIF", "va": "HC.."},
+            {"na": "OPTARIF", "va": "BBR("},
             {"na": "ISOUSC", "va": self.isousc_raw},
-            {"na": "HCHC", "va": self.hchc_raw},
-            {"na": "HCHP", "va": self.hchp_raw},
+            # {"na": "HCHC", "va": self.hchc_raw},
+            # {"na": "HCHP", "va": self.hchp_raw},
+            {"na":"BBRHCJB", "va": self.hcjb_raw},
+            {"na":"BBRHPJB", "va": self.hpjb_raw},
+            {"na":"BBRHCJW", "va": self.hcjw_raw},
+            {"na":"BBRHPJW", "va": self.hpjw_raw},
+            {"na":"BBRHCJR", "va": self.hcjr_raw},
+            {"na":"BBRHPJR", "va": self.hpjr_raw},
             {"na": "PTEC", "va": self.ptec_raw},
             {"na": "IINST", "va": iinst_raw},
             {"na": "IMAX", "va": "042"},

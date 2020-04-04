@@ -56,7 +56,6 @@
                     }
 
                     .enedis div {
-                        font-family: "Digital-7";
                         color: #000000;
                         letter-spacing: 2px;
                         text-align: left;
@@ -64,9 +63,9 @@
                     }
 
                     .enedis div.name {
-                        font-size: 18px;
+                        font-size: 10px;
                         color: #666666;
-                        width: 236px;
+                        text-align: center;
                     }
 
                     .enedis div.centre {
@@ -77,11 +76,29 @@
 
                     .enedis div.index {
                         font-family: "Digital-7 MonoItalic";
-                        font-size: 32px;
-                        width: 236px;
+                        font-size: 28px;
                         text-align: right;
                     }
-
+                    .enedis td.bleu {
+                        background-color: #11c2ee;
+                    }
+                    .enedis td.blanc {
+                        background-color: #ffffff;
+                    }
+                    .enedis td.rouge {
+                        background-color: #fd000d;
+                    }
+                    .enedis table.index {
+                        margin: 10px;
+                    }
+                    .enedis div.tempo_color {
+                        border-width: 2px;
+                        
+                        border-style: solid;
+                        
+                        border-color: #0156f9;
+                        border-radius: 10px;
+                    }
                     td.cpt {
                         width: 256px;
                         background-color: #cccccc;
@@ -94,13 +111,28 @@
                         <td class="cpt">
                             <div class="enedis">
                                 <div class="name centre">Index en kWH</div>
-                                <br>
-                                <div id="HCHPname" class="name">Heures Pleines</div>
-                                <div id="HCHP" class="index">0</div>
-                                <br>
-                                <div id="HCHCname" class="name">Heures Creuses</div>
-                                <div id="HCHC" class="index">0</div>
-
+                                <table class="index">
+                                    <thead>
+                                        <th><div id="HCHPname" class="name">Heures Pleines</div></th>
+                                        <th><div id="HCHCname" class="name">Heures Creuses</div></th>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="bleu"><div id="BBRHPJB" class="index">0</div></td>
+                                            <td class="bleu"><div id="BBRHCJB" class="index">0</div></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="blanc"><div id="BBRHPJW" class="index">0</div></td>
+                                            <td class="blanc"><div id="BBRHCJW" class="index">0</div></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="rouge" ><div id="BBRHPJR" class="index">0</div></td>
+                                            <td class="rouge"><div id="BBRHCJR" class="index">0</div></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                               
+                               
                             </div>
                         </td>
                         <td width="20px"></td>
@@ -961,16 +993,23 @@
                     var tic = JSON.parse(e.data);
                     gaugePAPP.value = tic.PAPP;
                     gaugeIINST.value = tic.IINST;
-                    $("#HCHP").text((tic.HCHP / 1000).toFixed(3) + "");
-                    $("#HCHC").text((tic.HCHC / 1000).toFixed(3) + "");
-                    if (tic.PTEC == "HC") {
-                        $("#HCHPname").text('Heures Pleines');
-                        $("#HCHCname").html('Heures Creuses<span class="glyphicon glyphicon glyphicon-ok-sign"></span>');
-                    }
-                    else {
-                        $("#HCHPname").html('Heures Pleines<span class="glyphicon glyphicon glyphicon-ok-sign"></span>');
-                        $("#HCHCname").text('Heures Creuses');
-                    }
+                    // $("#HCHP").text((tic.HCHP / 1000).toFixed(3) + "");
+                    // $("#HCHC").text((tic.HCHC / 1000).toFixed(3) + "");
+                    $("#BBRHCJB").text((tic.BBRHCJB / 1000).toFixed(1) + "")
+                                .removeClass("tempo_color");
+                    $("#BBRHPJB").text((tic.BBRHPJB / 1000).toFixed(1) + "")
+                                .removeClass("tempo_color");
+                    $("#BBRHCJW").text((tic.BBRHCJW / 1000).toFixed(1) + "")
+                                .removeClass("tempo_color");
+                    $("#BBRHPJW").text((tic.BBRHPJW / 1000).toFixed(1) + "")
+                                .removeClass("tempo_color");
+                    $("#BBRHCJR").text((tic.BBRHCJR / 1000).toFixed(1) + "")
+                                .removeClass("tempo_color");
+                    $("#BBRHPJR").text((tic.BBRHPJR / 1000).toFixed(1) + "")
+                                .removeClass("tempo_color");
+                    const regex = /[A-Z]+/;
+                    var tarif = tic.OPTARIF.match(regex)[0]; // strip BBR status
+                    $("#"+tarif+tic.PTEC).addClass("tempo_color");
                 }, false);
 
             }

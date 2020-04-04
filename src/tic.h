@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 
-void tic_decode(int c);
+void tic_decode(char c);
 void tic_make_timers();
 void tic_notifs();
 

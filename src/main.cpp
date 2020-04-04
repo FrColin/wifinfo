@@ -4,7 +4,6 @@
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
 
-
 #include "wifinfo.h"
 #include "timesync.h"
 #include "cli.h"
@@ -19,9 +18,27 @@
 #include "bt_relay.h"
 
 
+void print_reset_reason(uint32 reason)
+{
+  switch ( reason)
+  {
+    case 0 : Serial.println ("REASON_DEFAULT_RST");break;
+    case 1 : Serial.println ("REASON_WDT_RST");break; 
+    case 2:  Serial.println ("REASON_EXCEPTION_RST");break; 
+    case 3 : Serial.println ("REASON_SOFT_WDT_RST");break;               
+    case 4 : Serial.println ("REASON_SOFT_RESTART");break;             
+    case 5 : Serial.println ("REASON_DEEP_SLEEP_AWAKE");break;        
+    case 6 : Serial.println ("REASON_EXT_SYS_RST");break;             
+    default : Serial.println ("NO_MEAN");
+  }
+}
 
 void setup()
 {
+
+    // Set CPU speed to 160MHz
+    system_update_cpu_freq(160);
+
     led_setup();
     led_on();
     delay(100);
@@ -31,8 +48,14 @@ void setup()
     Serial.begin(115200);
 #else
     // sinon, RX est utilisé pour la téléinfo. TX est coupé
-    Serial.begin(1200, SERIAL_7E1, SERIAL_RX_ONLY);
+    //Serial.begin(1200, SERIAL_7E1, SERIAL_RX_ONLY);
+    Serial.begin(1200, SERIAL_7E1);
 #endif
+    Serial.println("CPU0 reset reason: ");
+    rst_info *resetInfo;
+    resetInfo = ESP.getResetInfoPtr();
+    print_reset_reason(resetInfo->reason);
+  
     Serial.flush();
 
     Serial.println(R"(
@@ -82,6 +105,8 @@ __      ___  __ ___       __
     Serial.flush();
 
     led_off();
+    ESP.wdtFeed(); //Force software watchdog to restart from 0
+    
 }
 
 void loop()
@@ -110,8 +135,9 @@ void loop()
 #else
     if (Serial.available())
     {
-        int c = Serial.read();
-        tic_decode(c);
+        char c = Serial.read();
+        if ( c != -1 )
+            tic_decode(c);
     }
 #endif
 }

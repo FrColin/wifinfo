@@ -9,4 +9,6 @@ void relay_notif_ptec(const char *value);
 #define bt_relay_setup()
 #define bt_relay_loop()
 #define relay_notif_ptec()
+#define bt_relay_set()
+#define bt_relay_get()
 #endif

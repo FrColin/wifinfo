@@ -51,9 +51,11 @@ static void http_notif_seuils();
 static void http_notif_adps();
 static void jeedom_notif();
 static void emoncms_notif();
+
 static bool relay_notif_periode_en_cours();
 
-void tic_decode(int c)
+
+void tic_decode(char c)
 {
     if (tinfo_pause)
     {
@@ -70,13 +72,18 @@ void tic_decode(int c)
         }
         tinfo.copy_from(tinfo_decoder);
 
-        Serial.printf("teleinfo: [%lu] %s  %s  %s  %s\n",
+#ifdef PRINT_TELEINFO
+        Serial.printf("teleinfo: [%lu] PTEC=%s  HCJB=%s HPJB=%s HCJW=%s HPJW=%s HCJR=%s HPJR=%s PAPP=%s\n",
                       millis(),
                       tinfo.get_value("PTEC", "?"),
-                      tinfo.get_value("HCHP", "?"),
-                      tinfo.get_value("HCHC", "?"),
-                      tinfo.get_value("PAPP", "?"));
-
+                      tinfo.get_value("BBRHCJB", "?"),
+                      tinfo.get_value("BBRHPJB", "?"),
+                      tinfo.get_value("BBRHCJW", "?"),
+                      tinfo.get_value("BBRHPJW", "?"),
+                      tinfo.get_value("BBRHCJR", "?"),
+                      tinfo.get_value("BBRHPJR", "?"),
+                      tinfo.get_value("PAPP", "?") );
+#endif
         tic_notifs();
 
         if (config.options & OPTION_LED_TINFO)
@@ -219,7 +226,8 @@ static void tic_get_json_dict_notif(String &data, const char *notif)
     }
 
     // la trame fait 217 à 230 selon ADPS pour un abo HC/HP
-    JSONBuilder js(data, 256);
+    // +++ EN tempo
+    JSONBuilder js(data, 2048);
     const char *label;
     const char *value;
     const char *state = nullptr;
@@ -243,7 +251,7 @@ static void tic_get_json_dict_notif(String &data, const char *notif)
             js.append(label, value);
     }
 
-    js.finalize();
+    js.finalize();    
 }
 
 void tic_get_json_dict(String &data, bool restricted __attribute__((unused)))
@@ -379,6 +387,7 @@ static void http_notif(const char *notif)
         http_request(config.httpreq.host, config.httpreq.port, uri);
     }
 }
+
 static bool relay_notif_periode_en_cours()
 {
     const char *PTEC = tinfo.get_value("PTEC");
@@ -391,11 +400,14 @@ static bool relay_notif_periode_en_cours()
     if (strncmp(periode_en_cours, PTEC, sizeof(periode_en_cours)) != 0)
     {
         strncpy_s(periode_en_cours, PTEC, sizeof(periode_en_cours) - 1);
+#ifdef ENABLE_RELAY
         relay_notif_ptec(PTEC);
+#endif
         return true;
     }
     return false;
 }
+
 static void http_notif_periode_en_cours()
 {
     
