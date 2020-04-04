@@ -63,10 +63,10 @@ void relays_handle_form(ESP8266WebServer &server, bool restricted)
     // We validated config ?
     if (server.hasArg("save"))
     {
-        Serial.println(F("===== Posted relays"));
-        for (int i = 0; i < server.args(); ++i)
-            Serial.printf("  %3d  %-20s = %s\n", i, server.argName(i).c_str(), server.arg(i).c_str());
-        Serial.println(F("===== Posted relays"));
+        // Serial.println(F("===== Posted relays"));
+        // for (int i = 0; i < server.args(); ++i)
+        //     Serial.printf("  %3d  %-20s = %s\n", i, server.argName(i).c_str(), server.arg(i).c_str());
+        // Serial.println(F("===== Posted relays"));
 
         
         // RELAYS
@@ -118,7 +118,7 @@ void relays_handle_form(ESP8266WebServer &server, bool restricted)
         response = PSTR("Missing Form Field");
     }
 
-    Serial.printf_P(PSTR("Sending response %d %s\n"), ret, response);
+    //Serial.printf_P(PSTR("Sending response %d %s\n"), ret, response);
 
     server.send(ret, mime::mimeTable[mime::txt].mimeType, response);
 

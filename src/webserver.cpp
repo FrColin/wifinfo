@@ -180,7 +180,7 @@ void webserver_setup()
         String re = server.arg("switch");
         String val = server.arg("on");
         bt_relay_set(atoi(re.c_str()),  val == "true");
-        server.sendHeader("Cache-Control", "max-age=86400");
+        //server.sendHeader("Cache-Control", "max-age=86400");
         server.send(200, mime::mimeTable[mime::txt].mimeType, "OK");
     });
  #endif
