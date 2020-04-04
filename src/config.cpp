@@ -70,15 +70,17 @@ static void config_securize_cstrings()
     config.username[CFG_USERNAME_LENGTH] = 0;
     config.password[CFG_PASSWORD_LENGTH] = 0;
 
+#ifdef ENABLE_EMONCMS
     config.emoncms.host[CFG_EMON_HOST_LENGTH] = 0;
     config.emoncms.apikey[CFG_EMON_KEY_LENGTH] = 0;
     config.emoncms.url[CFG_EMON_URL_LENGTH] = 0;
-
+#endif
+#ifdef ENABLE_EMONCMS
     config.jeedom.host[CFG_JDOM_HOST_LENGTH] = 0;
     config.jeedom.apikey[CFG_JDOM_KEY_LENGTH] = 0;
     config.jeedom.url[CFG_JDOM_URL_LENGTH] = 0;
     config.jeedom.adco[CFG_JDOM_ADCO_LENGTH] = 0;
-
+#endif
     config.httpreq.host[CFG_HTTPREQ_HOST_LENGTH] = 0;
     config.httpreq.url[CFG_HTTPREQ_URL_LENGTH] = 0;
 }
@@ -94,18 +96,20 @@ void config_reset()
     strcpy_P(config.ota_auth, DEFAULT_OTA_AUTH);
     config.ota_port = DEFAULT_OTA_PORT;
     config.sse_freq = 10;
-
+#ifdef ENABLE_EMONCMS
     // Emoncms
     strcpy_P(config.emoncms.host, CFG_EMON_DEFAULT_HOST);
     config.emoncms.port = CFG_EMON_DEFAULT_PORT;
     strcpy_P(config.emoncms.url, CFG_EMON_DEFAULT_URL);
+#endif
 
+#ifdef ENABLE_JEEDOM
     // Jeedom
     strcpy_P(config.jeedom.host, CFG_JDOM_DEFAULT_HOST);
     config.jeedom.port = CFG_JDOM_DEFAULT_PORT;
     strcpy_P(config.jeedom.url, CFG_JDOM_DEFAULT_URL);
     strcpy_P(config.jeedom.adco, CFG_JDOM_DEFAULT_ADCO);
-
+#endif
     // HTTP Request
     strcpy_P(config.httpreq.host, CFG_HTTPREQ_DEFAULT_HOST);
     config.httpreq.port = CFG_HTTPREQ_DEFAULT_PORT;
@@ -241,7 +245,7 @@ void config_show()
         Serial.print(F(" LED_TINFO"));
     }
     Serial.println();
-
+#ifdef ENABLE_EMONCMS
     Serial.println(F("===== Emoncms"));
     Serial.print(F("host     :"));
     Serial.println(config.emoncms.host);
@@ -255,7 +259,9 @@ void config_show()
     Serial.println(config.emoncms.node);
     Serial.print(F("freq     :"));
     Serial.println(config.emoncms.freq);
+#endif
 
+#ifdef ENABLE_JEEDOM
     Serial.println(F("===== Jeedom"));
     Serial.print(F("host     :"));
     Serial.println(config.jeedom.host);
@@ -269,6 +275,7 @@ void config_show()
     Serial.println(config.jeedom.adco);
     Serial.print(F("freq     :"));
     Serial.println(config.jeedom.freq);
+#endif
 
     Serial.println(F("===== HTTP request"));
     Serial.print(F("host      : "));
@@ -307,12 +314,13 @@ void config_show()
     Serial.print(F("seuil haut: "));
     Serial.println(config.httpreq.seuil_haut);
 
+#ifdef ENABLE_RELAY
     Serial.println("\r\n===== Relais"); 
     Serial.print(F("relai 0  state:"));
     Serial.println(config.relays[0].u.all,BIN); 
     Serial.print(F("relai 1  state:"));
     Serial.println(config.relays[1].u.all, BIN); 
-    
+#endif   
     Serial.flush();
 }
 
@@ -338,20 +346,23 @@ void config_get_json(String &r, bool restricted)
     js.append(CFG_FORM_SSE_FREQ, config.sse_freq);
     js.append(CFG_LED_TINFO, (config.options & OPTION_LED_TINFO) ? 1 : 0);
 
+#ifdef ENABLE_EMONCMS
     js.append(CFG_FORM_EMON_HOST, config.emoncms.host);
     js.append(CFG_FORM_EMON_PORT, config.emoncms.port);
     js.append(CFG_FORM_EMON_URL, config.emoncms.url);
     js.append(CFG_FORM_EMON_KEY, config.emoncms.apikey);
     js.append(CFG_FORM_EMON_NODE, config.emoncms.node);
     js.append(CFG_FORM_EMON_FREQ, config.emoncms.freq);
+#endif
 
+#ifdef ENABLE_JEEDOM
     js.append(CFG_FORM_JDOM_HOST, config.jeedom.host);
     js.append(CFG_FORM_JDOM_PORT, config.jeedom.port);
     js.append(CFG_FORM_JDOM_URL, config.jeedom.url);
     js.append(CFG_FORM_JDOM_KEY, config.jeedom.apikey);
     js.append(CFG_FORM_JDOM_ADCO, config.jeedom.adco);
     js.append(CFG_FORM_JDOM_FREQ, config.jeedom.freq);
-
+#endif
     js.append(CFG_FORM_HTTPREQ_HOST, config.httpreq.host);
     js.append(CFG_FORM_HTTPREQ_PORT, config.httpreq.port);
     js.append(CFG_FORM_HTTPREQ_URL, config.httpreq.url);
@@ -362,10 +373,10 @@ void config_get_json(String &r, bool restricted)
     js.append(CFG_FORM_HTTPREQ_TRIGGER_ADPS, config.httpreq.trigger_adps);
     js.append(CFG_FORM_HTTPREQ_TRIGGER_SEUILS, config.httpreq.trigger_seuils);
     js.append(CFG_FORM_HTTPREQ_SEUIL_BAS, config.httpreq.seuil_bas);
-    js.append(CFG_FORM_HTTPREQ_SEUIL_HAUT, config.httpreq.seuil_haut, true);
+    js.append(CFG_FORM_HTTPREQ_SEUIL_HAUT, config.httpreq.seuil_haut);
     
     js.append(CFG_FORM_RELAYS_0, config.relays[0].u.all);
-    js.append(CFG_FORM_RELAYS_1,  config.relays[0].u.all);
+    js.append(CFG_FORM_RELAYS_1, config.relays[1].u.all, true);
 }
 int validate_int(const String &value, int a, int b, int d)
 {
@@ -410,7 +421,7 @@ void config_handle_form(ESP8266WebServer &server, bool restricted)
         {
             config.options |= OPTION_LED_TINFO;
         }
-
+#ifdef ENABLE_EMONCMS
         // Emoncms
         strncpy_s(config.emoncms.host, server.arg(CFG_FORM_EMON_HOST), CFG_EMON_HOST_LENGTH);
         config.emoncms.port = validate_int(server.arg(CFG_FORM_EMON_PORT), 0, 65535, CFG_EMON_DEFAULT_PORT);
@@ -418,7 +429,8 @@ void config_handle_form(ESP8266WebServer &server, bool restricted)
         strncpy_s(config.emoncms.apikey, server.arg(CFG_FORM_EMON_KEY), CFG_EMON_KEY_LENGTH);
         config.emoncms.node = validate_int(server.arg(CFG_FORM_EMON_NODE), 0, 255, 0);
         config.emoncms.freq = validate_int(server.arg(CFG_FORM_EMON_FREQ), 0, 86400, 0);
-
+#endif
+#ifdef ENABLE_JEEDOM
         // jeedom
         strncpy_s(config.jeedom.host, server.arg(CFG_FORM_JDOM_HOST), CFG_JDOM_HOST_LENGTH);
         config.jeedom.port = validate_int(server.arg(CFG_FORM_JDOM_PORT), 0, 65535, CFG_JDOM_DEFAULT_PORT);
@@ -426,7 +438,7 @@ void config_handle_form(ESP8266WebServer &server, bool restricted)
         strncpy_s(config.jeedom.apikey, server.arg(CFG_FORM_JDOM_KEY), CFG_JDOM_KEY_LENGTH);
         strncpy_s(config.jeedom.adco, server.arg(CFG_FORM_JDOM_ADCO), CFG_JDOM_ADCO_LENGTH);
         config.jeedom.freq = validate_int(server.arg(CFG_FORM_JDOM_FREQ), 0, 86400, 0);
-
+#endif
         // HTTP Request
         strncpy_s(config.httpreq.host, server.arg(CFG_FORM_HTTPREQ_HOST), CFG_HTTPREQ_HOST_LENGTH);
         config.httpreq.port = validate_int(server.arg(CFG_FORM_HTTPREQ_PORT), 0, 65535, CFG_HTTPREQ_DEFAULT_PORT);

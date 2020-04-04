@@ -58,12 +58,7 @@ void setup()
   
     Serial.flush();
 
-    Serial.println(R"(
-__      ___  __ ___       __
-\ \    / (_)/ _|_ _|_ _  / _|___
- \ \/\/ /| |  _|| || ' \|  _/ _ \
-  \_/\_/ |_|_| |___|_||_|_| \___/
-)");
+    Serial.println(R"(WIFINFO)");
     Serial.flush();
 
     // chargement de la conf depuis l'EEPROM

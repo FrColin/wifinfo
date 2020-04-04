@@ -35,7 +35,7 @@ void relays_get_json_array(String &data, bool restricted __attribute__((unused))
     js_relay0.append("hpjw",config.relays[0].u.hpjw);
     js_relay0.append("hcjr",config.relays[0].u.hcjr);
     js_relay0.append("hpjr",config.relays[0].u.hpjr);
-    js_relay1.append("switch",state0 ? 1 : 0);
+    js_relay0.append("switch",state0 ? 1 : 0);
     js_relay0.finalize();
 
     //relai 1

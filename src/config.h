@@ -34,21 +34,7 @@
 #define CFG_USERNAME_LENGTH 31
 #define CFG_PASSWORD_LENGTH 31
 
-#define CFG_EMON_HOST_LENGTH 32
-#define CFG_EMON_KEY_LENGTH 32
-#define CFG_EMON_URL_LENGTH 32
-#define CFG_EMON_DEFAULT_PORT 80
-#define CFG_EMON_DEFAULT_HOST PSTR("emoncms.org")
-#define CFG_EMON_DEFAULT_URL PSTR("/input/post.json")
 
-#define CFG_JDOM_HOST_LENGTH 32
-#define CFG_JDOM_KEY_LENGTH 48
-#define CFG_JDOM_URL_LENGTH 64
-#define CFG_JDOM_ADCO_LENGTH 12
-#define CFG_JDOM_DEFAULT_PORT 80
-#define CFG_JDOM_DEFAULT_HOST ""
-#define CFG_JDOM_DEFAULT_URL PSTR("/plugins/teleinfo/core/php/jeeTeleinfo.php")
-#define CFG_JDOM_DEFAULT_ADCO ""
 
 #define CFG_HTTPREQ_HOST_LENGTH 32
 #define CFG_HTTPREQ_URL_LENGTH 150
@@ -74,19 +60,7 @@
 #define CFG_FORM_USERNAME FPSTR("username")
 #define CFG_FORM_PASSWORD FPSTR("password")
 
-#define CFG_FORM_EMON_HOST FPSTR("emon_host")
-#define CFG_FORM_EMON_PORT FPSTR("emon_port")
-#define CFG_FORM_EMON_URL FPSTR("emon_url")
-#define CFG_FORM_EMON_KEY FPSTR("emon_apikey")
-#define CFG_FORM_EMON_NODE FPSTR("emon_node")
-#define CFG_FORM_EMON_FREQ FPSTR("emon_freq")
 
-#define CFG_FORM_JDOM_HOST FPSTR("jdom_host")
-#define CFG_FORM_JDOM_PORT FPSTR("jdom_port")
-#define CFG_FORM_JDOM_URL FPSTR("jdom_url")
-#define CFG_FORM_JDOM_KEY FPSTR("jdom_apikey")
-#define CFG_FORM_JDOM_ADCO FPSTR("jdom_adco")
-#define CFG_FORM_JDOM_FREQ FPSTR("jdom_freq")
 
 #define CFG_FORM_HTTPREQ_HOST FPSTR("httpreq_host")
 #define CFG_FORM_HTTPREQ_PORT FPSTR("httpreq_port")
@@ -100,9 +74,23 @@
 #define CFG_FORM_HTTPREQ_SEUIL_HAUT FPSTR("httpreq_seuil_haut")
 #define CFG_FORM_HTTPREQ_SEUIL_BAS FPSTR("httpreq_seuil_bas")
 
-#define CFG_FORM_RELAYS_0 FPSTR("relays-0")
-#define CFG_FORM_RELAYS_1 FPSTR("relays-1")
 
+
+#ifdef ENABLE_EMONCMS
+
+#define CFG_EMON_HOST_LENGTH 32
+#define CFG_EMON_KEY_LENGTH 32
+#define CFG_EMON_URL_LENGTH 32
+#define CFG_EMON_DEFAULT_PORT 80
+
+#define CFG_EMON_DEFAULT_HOST PSTR("emoncms.org")
+#define CFG_EMON_DEFAULT_URL PSTR("/input/post.json")
+#define CFG_FORM_EMON_HOST FPSTR("emon_host")
+#define CFG_FORM_EMON_PORT FPSTR("emon_port")
+#define CFG_FORM_EMON_URL FPSTR("emon_url")
+#define CFG_FORM_EMON_KEY FPSTR("emon_apikey")
+#define CFG_FORM_EMON_NODE FPSTR("emon_node")
+#define CFG_FORM_EMON_FREQ FPSTR("emon_freq")
 // Config for emoncms
 // 128 Bytes
 struct EmoncmsConfig
@@ -115,7 +103,25 @@ struct EmoncmsConfig
     uint32_t freq;                        // refresh rate
     uint8_t filler[22];
 } __attribute__((packed));
+#endif
 
+#ifdef ENABLE_JEEDOM
+
+#define CFG_JDOM_HOST_LENGTH 32
+#define CFG_JDOM_KEY_LENGTH 48
+#define CFG_JDOM_URL_LENGTH 64
+#define CFG_JDOM_ADCO_LENGTH 12
+#define CFG_JDOM_DEFAULT_PORT 80
+#define CFG_JDOM_DEFAULT_HOST ""
+#define CFG_JDOM_DEFAULT_URL PSTR("/plugins/teleinfo/core/php/jeeTeleinfo.php")
+#define CFG_JDOM_DEFAULT_ADCO ""
+
+#define CFG_FORM_JDOM_HOST FPSTR("jdom_host")
+#define CFG_FORM_JDOM_PORT FPSTR("jdom_port")
+#define CFG_FORM_JDOM_URL FPSTR("jdom_url")
+#define CFG_FORM_JDOM_KEY FPSTR("jdom_apikey")
+#define CFG_FORM_JDOM_ADCO FPSTR("jdom_adco")
+#define CFG_FORM_JDOM_FREQ FPSTR("jdom_freq")
 // Config for jeedom
 // 256 Bytes
 struct JeedomConfig
@@ -129,7 +135,7 @@ struct JeedomConfig
     uint8_t use_post;                     // POST un dictionnaire JSON
     uint8_t filler[89];
 } __attribute__((packed));
-
+#endif
 // Config for http request
 // 256 Bytes
 struct HttpreqConfig
@@ -148,6 +154,11 @@ struct HttpreqConfig
     uint8_t filler[61];
 } __attribute__((packed));
 
+#ifdef ENABLE_RELAY
+
+#define CFG_FORM_RELAYS_0 FPSTR("relays-0")
+#define CFG_FORM_RELAYS_1 FPSTR("relays-1")
+
 struct RelayConfig {
     union {
         uint8_t all;
@@ -163,7 +174,7 @@ struct RelayConfig {
         }; 
     } u;
 } __attribute__((packed));
-
+#endif
 // Config saved into eeprom
 // 1024 bytes total including CRC
 struct Config
@@ -179,10 +190,16 @@ struct Config
     char username[CFG_USERNAME_LENGTH + 1]; // nom pour Basic Auth
     char password[CFG_PASSWORD_LENGTH + 1]; // mot de passe
     uint8_t filler[65];                     // in case adding data in config avoiding loosing current conf by bad crc
+    #ifdef ENABLE_JEEDOM
     EmoncmsConfig emoncms;                  // Emoncms configuration
+    #endif
+    #ifdef ENABLE_JEEDOM
     JeedomConfig jeedom;                    // jeedom configuration
+    #endif
     HttpreqConfig httpreq;                  // HTTP request
+    #ifdef ENABLE_RELAY
     RelayConfig relays[2];                  // Relay config   
+    #endif
     uint16_t crc;                           // CRC de validité du bloc de config
 } __attribute__((packed));
 
