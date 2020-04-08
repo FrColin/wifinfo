@@ -1,6 +1,6 @@
 // module téléinformation client
 // rene-d 2020
-
+#include <PolledTimeout.h>
 #include "wifinfo.h"
 #include "tic.h"
 #include "config.h"
@@ -11,7 +11,8 @@
 #include "strncpy_s.h"
 #include "teleinfo.h"
 #include "bt_relay.h"
-#include <PolledTimeout.h>
+#include "mqtt.h"
+
 
 // les différente notifications que httpreq peut envoyer
 //
@@ -33,7 +34,6 @@ extern SseClients sse_clients;
 static char periode_en_cours[8] = {0};
 static bool init_periode_en_cours = true;
 static Seuil seuil_en_cours = BAS;
-static bool etat_adps = false;
 
 static esp8266::polledTimeout::periodicMs timer_http(esp8266::polledTimeout::periodicMs::neverExpires);
 #ifdef ENABLE_EMONCMS
@@ -41,6 +41,9 @@ static esp8266::polledTimeout::periodicMs timer_emoncms(esp8266::polledTimeout::
 #endif
 #ifdef ENABLE_JEEDOM
 static esp8266::polledTimeout::periodicMs timer_jeedom(esp8266::polledTimeout::periodicMs::neverExpires);
+#endif
+#ifdef ENABLE_MQTT
+static esp8266::polledTimeout::periodicMs timer_mqtt(esp8266::polledTimeout::periodicMs::neverExpires);
 #endif
 
 static esp8266::polledTimeout::periodicMs timer_sse(esp8266::polledTimeout::periodicMs::neverExpires);
@@ -59,6 +62,11 @@ static void jeedom_notif();
 #endif
 #ifdef ENABLE_EMONCMS
 static void emoncms_notif();
+#endif
+#ifdef ENABLE_MQTT
+static void mqtt_notif();
+static void mqtt_notif_periode_en_cours();
+static void mqtt_notif_adps();
 #endif
 static bool relay_notif_periode_en_cours();
 
@@ -139,6 +147,25 @@ void tic_notifs()
         emoncms_notif();
     }
 #endif
+#ifdef ENABLE_MQTT
+    if (config.mqtt.host[0] != 0)
+    {
+        if (config.mqtt.trigger_ptec && change_ptec)
+        {
+            mqtt_notif_periode_en_cours();
+        }
+
+        if (config.mqtt.trigger_adps)
+        {
+            mqtt_notif_adps();
+        }
+
+        if (timer_mqtt)
+        {
+            mqtt_notif();
+        }
+    }
+#endif
     if (timer_sse && (sse_clients.count() != 0))
     {
         String data;
@@ -186,6 +213,19 @@ void tic_make_timers()
         Serial.printf_P(PSTR("timer_emoncms enabled, freq=%d s\n"), config.emoncms.freq);
     }
 #endif
+#ifdef ENABLE_MQTT
+    // mqtt
+    if ((config.mqtt.freq == 0) || (config.mqtt.host[0] == 0) || (config.mqtt.port == 0))
+    {
+        timer_mqtt.resetToNeverExpires();
+        Serial.println("timer_mqtt disabled");
+    }
+    else
+    {
+        timer_mqtt.reset(config.mqtt.freq * 1000);
+        Serial.printf_P(PSTR("timer_mqtt enabled, freq=%d s\n"), config.mqtt.freq);
+    }
+#endif
     // connexions SSE
     if (config.sse_freq == 0)
     {
@@ -217,6 +257,7 @@ void tic_get_json_array(String &data, bool restricted __attribute__((unused)))
 
     // expérimental: la puissance en watt calculée sur la dernière minute
     js.append("watt", tinfo.watt());
+    js.append("checksumerr", tinfo_decoder.get_checksumerr());
 
     while (tinfo.get_value_next(label, value, &state))
     {
@@ -417,7 +458,55 @@ static bool relay_notif_periode_en_cours()
     }
     return false;
 }
+#ifdef ENABLE_MQTT
+static void mqtt_notif()
+{
+    static String data;
+    data.clear();
+    tic_get_json_dict(data, false);
+    Serial.printf("send MQTT Data length %d\n",data.length());
+    if (data.length() > MQTT_MAX_PACKET_SIZE ) {
+        Serial.printf("send MQTT Data length %d > %d\n",data.length(),MQTT_MAX_PACKET_SIZE);
+        mqttPost("data", "Buffer overflow");
+    } else {
+        Serial.printf("send MQTT Data length %d\n",data.length());
+        mqttPost("data", data.c_str());
+    }
+}
+static void mqtt_notif_periode_en_cours()
+{
+    const char *PTEC = tinfo.get_value("PTEC");
+    if (PTEC == NULL)
+    {
+        PTEC="----";
+    }
+    mqttPost("ptec", PTEC);
+}
+static void mqtt_notif_adps()
+{
+    static bool etat_adps = false;
+    const char *ADPS = tinfo.get_value("ADPS");
 
+    if (ADPS == NULL)
+    {
+        if (etat_adps == true)
+        {
+            // on était en ADPS: on signale et on rebascule en état normal
+            etat_adps = false;
+            mqttPost("adps", "0");
+        }
+    }
+    else
+    {
+        if (etat_adps == false)
+        {
+            // on vient de passer en ADPS: on signale et on bascule dans l'état ADPS
+            etat_adps = true;
+            mqttPost("adps", ADPS);
+        }
+    }
+}
+#endif
 static void http_notif_periode_en_cours()
 {
     
@@ -435,6 +524,8 @@ static void http_notif_periode_en_cours()
 
 static void http_notif_adps()
 {
+    static bool etat_adps = false;
+
     const char *ADPS = tinfo.get_value("ADPS");
 
     if (ADPS == NULL)

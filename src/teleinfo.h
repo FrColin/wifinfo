@@ -43,6 +43,7 @@ public:
     static const size_t MAX_FRAME_SIZE = 350;
 
 protected:
+    uint32_t checksum_error;
     uint8_t accumulated_checksum = 0;  
     char frame_[MAX_FRAME_SIZE]; // buffer de mémorisation de la trame
     size_t size_{0};             // offset courant (i.e. longueur de la trame)
@@ -431,6 +432,9 @@ public:
     {
         return size_ != 0;
     }
+    uint32_t get_checksumerr(){
+        return checksum_error;
+    }
 
     void put(char c)
     {
@@ -495,6 +499,7 @@ public:
                         else
                         {
                             // mauvais checksum: reinit
+                            checksum_error++;
                             state_ = wait_stx;
                             //Serial.printf("mauvais chechsum %02x expected %02x\n",accumulated_checksum,checksum );
                         }

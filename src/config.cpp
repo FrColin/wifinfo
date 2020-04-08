@@ -81,6 +81,11 @@ static void config_securize_cstrings()
     config.jeedom.url[CFG_JDOM_URL_LENGTH] = 0;
     config.jeedom.adco[CFG_JDOM_ADCO_LENGTH] = 0;
 #endif
+#ifdef ENABLE_MQTT
+    config.mqtt.host[CFG_MQTT_HOST_LENGTH] = 0;
+    config.mqtt.outTopic[CFG_MQTT_TOPIC_LENGTH] = 0;
+    config.mqtt.inTopic[CFG_MQTT_TOPIC_LENGTH] = 0;
+#endif
     config.httpreq.host[CFG_HTTPREQ_HOST_LENGTH] = 0;
     config.httpreq.url[CFG_HTTPREQ_URL_LENGTH] = 0;
 }
@@ -109,6 +114,14 @@ void config_reset()
     config.jeedom.port = CFG_JDOM_DEFAULT_PORT;
     strcpy_P(config.jeedom.url, CFG_JDOM_DEFAULT_URL);
     strcpy_P(config.jeedom.adco, CFG_JDOM_DEFAULT_ADCO);
+#endif
+
+#ifdef ENABLE_MQTT
+    // MQTT
+    strcpy_P(config.mqtt.host, CFG_MQTT_DEFAULT_HOST);
+    config.mqtt.port = CFG_MQTT_DEFAULT_PORT;
+    strcpy_P(config.mqtt.inTopic, CFG_MQTT_DEFAULT_TOPIC"/in");
+    strcpy_P(config.mqtt.outTopic, CFG_MQTT_DEFAULT_TOPIC"/out");
 #endif
     // HTTP Request
     strcpy_P(config.httpreq.host, CFG_HTTPREQ_DEFAULT_HOST);
@@ -451,7 +464,15 @@ void config_handle_form(ESP8266WebServer &server, bool restricted)
         config.httpreq.trigger_seuils = server.hasArg(CFG_FORM_HTTPREQ_TRIGGER_SEUILS);
         config.httpreq.seuil_bas = validate_int(server.arg(CFG_FORM_HTTPREQ_SEUIL_BAS), 0, 20000, 0);
         config.httpreq.seuil_haut = validate_int(server.arg(CFG_FORM_HTTPREQ_SEUIL_HAUT), 0, 20000, 0);
-
+#ifdef ENABLE_MQTT
+        strncpy_s(config.mqtt.host, server.arg(CFG_FORM_MQTT_HOST), CFG_MQTT_HOST_LENGTH);
+        config.mqtt.port = validate_int(server.arg(CFG_FORM_MQTT_PORT), 0, 65535, CFG_MQTT_DEFAULT_PORT);
+        strncpy_s(config.mqtt.inTopic, server.arg(CFG_FORM_MQTT_INTOPIC), CFG_MQTT_TOPIC_LENGTH);
+        strncpy_s(config.mqtt.outTopic, server.arg(CFG_FORM_MQTT_OUTTOPIC), CFG_MQTT_TOPIC_LENGTH);
+        config.mqtt.freq = validate_int(server.arg(CFG_FORM_MQTT_FREQ), 0, 86400, 0);
+        config.mqtt.trigger_adps = server.hasArg(CFG_FORM_MQTT_TRIGGER_ADPS);
+        config.mqtt.trigger_ptec = server.hasArg(CFG_FORM_MQTT_TRIGGER_PTEC);
+#endif
         if (config_save())
         {
             ret = 200;

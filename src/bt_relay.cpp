@@ -4,6 +4,7 @@
 #include "config.h"
 #include "bt_relay.h"
 #include "tic.h"
+#include "mqtt.h"
 
 #ifdef ENABLE_RELAY
 
@@ -21,22 +22,18 @@ static const uint8_t relayCount = 2;
 
 Relay* relay[2];
 DebounceEvent* button[2];
+bool init_post[2];
 
 void click(int i){
   // toogle relay
-  if (relay[i]->state())
-  {
-    // turn it off
-    relay[i]->off();
-  }
-  else
-  {
-    // turn it on
-    relay[i]->on();
-  }
-  config.relays[i].u.state = relay[i]->state();
+  bt_relay_set(i, ! relay[i]->state());
 }
-
+// post relay status
+void bt_relay_post(int sw, bool on){
+  char topic[64];
+  sprintf(topic, PSTR("switch/%d"),sw);
+  mqttPost(topic,on ? "on":"off");
+}
 void bt_relay_setup()
 {
     for( int i = 0 ; i <relayCount; i++)
@@ -58,7 +55,7 @@ void bt_relay_setup()
           default:
             break;
         }
-        
+        init_post[i] = true;
     }
     
 }
@@ -74,14 +71,20 @@ void bt_relay_loop()
         if (event == EVENT_PRESSED) {
             click(i);
         }
+        if ( init_post[i] ){
+          bt_relay_post(i,relay[i]->state());
+          init_post[i] = false;
+        }
     }
     }
 }
+
 // change relay status
 void bt_relay_set(int sw, bool on)
 {
   relay[sw]->state(on);
   config.relays[sw].u.state = on;
+  bt_relay_post(sw,on);
 }
 bool bt_relay_get(int sw)
 {
@@ -124,8 +127,7 @@ void relay_notif_ptec(const char *value){
   for( int i = 0 ; i <relayCount; i++)
   {
     bool state = mask.u.all & config.relays[i].u.all;
-    relay[i]->state( state );
-    config.relays[i].u.state = state;
+    bt_relay_set(i, state);
     Serial.printf("Periode change %s Relay %d : %s\n", value, i, state ? "on" : "off");
   }
 

@@ -16,6 +16,7 @@
 #include "tic.h"
 #include "webserver.h"
 #include "bt_relay.h"
+#include "mqtt.h"
 
 
 void print_reset_reason(uint32 reason)
@@ -87,6 +88,11 @@ void setup()
     // initialise le client série
     cli_setup();
 #endif
+#ifdef ENABLE_MQTT
+    if( config.mqtt.host[0] != '\0'){
+        mqtt_setup();
+    }
+#endif
 
     // initialise le serveur web embarqué
     webserver_setup();
@@ -117,7 +123,11 @@ void loop()
 #ifdef ENABLE_OTA
     ArduinoOTA.handle();
 #endif
-
+#ifdef ENABLE_MQTT
+    if( (config.mqtt.host[0] != '\0' )){
+        mqtt_loop();
+    }
+#endif
     // MDNS.update();
 
 #ifdef ENABLE_CLI

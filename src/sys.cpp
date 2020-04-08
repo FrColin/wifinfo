@@ -132,6 +132,9 @@ void sys_get_info_json(String &response, bool restricted)
 #ifdef ENABLE_RELAY
         flags += F(" RELAY");
 #endif
+#ifdef ENABLE_MQTT
+        flags += F(" MQTT");
+#endif
         js.append(F("Options"), flags);
 
         js.append(F("SDK Version"), system_get_sdk_version());

@@ -392,7 +392,86 @@
                                 </div>
                             </div>
                         </div> <!-- panel HTTP request -->
+                        <!-- panel MQTT -->
+                        <div class="panel-group" id="pan_mqtt">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title clickable" data-toggle="collapse" data-parent="#pan_mqtt" data-target="#col_mqtt">
+                                        <span class="glyphicon glyphicon-cog"></span>&nbsp;MQTT<span
+                                            class="pull-right glyphicon glyphicon-chevron-down"></span>
+                                    </h3>
+                                </div>
+                                <div class="panel-collapse collapse out" id="col_mqtt">
 
+                                    <div class="panel-body">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Hostname</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="mqtt_host" name="mqtt_host" maxlength="32"
+                                                    placeholder="Hostname">
+                                                <span class="help-block">Laisser vide pour désactiver MQTT.</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Port</label>
+                                            <div class="col-sm-2">
+                                                <input type="text" class="form-control" id="mqtt_port" name="mqtt_port" maxlength="5" placeholder="Port">
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Topic de Sortie</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="mqtt_out_topic" name="mqtt_out_topic" placeholder="Topic de Sortie">
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Topic d'entrée</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="mqtt_in_topic" name="mqtt_in_topic" placeholder="Topic d'entrée">
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Mise à jour</label>
+                                            <div class="col-sm-9">
+                                                <select id="mqtt_freq" name="mqtt_freq" class="form-control col-sm-2">
+                                                    <option value="0">désactivée</option>
+                                                    <option value="15">toutes les 15 secondes</option>
+                                                    <option value="30">toutes les 30 secondes</option>
+                                                    <option value="60">toutes les minutes</option>
+                                                    <option value="300">toutes les 5 minutes</option>
+                                                    <option value="900">tous les 1/4 d'heure</option>
+                                                    <option value="1800">toutes les 1/2 heure</option>
+                                                    <option value="3600">toutes les heures</option>
+                                                    <option value="21600">toutes les 6 heures</option>
+                                                    <option value="42300">toutes les 12 heures</option>
+                                                    <option value="86400">tous les jours</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Déclencheurs</label>
+                                            <div class="col-sm-9">
+                                                <label class="checkbox-inline"><input type="checkbox" id="mqtt_trigger_ptec" name="mqtt_trigger_ptec"
+                                                        value="1">Changement PTEC</label>
+                                                <label class="checkbox-inline"><input type="checkbox" id="mqtt_trigger_adps" name="mqtt_trigger_adps"
+                                                        value="1">ADPS</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="panel-footer">
+                                        <div class="text-center">
+                                            <div class="btn-group">
+                                                <button type="submit" class="btn btn-default btn-success">Enregistrer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- MQTT -->
                         <!-- panel Advanced -->
                         <div class="panel-group" id="pan_advanced">
                             <div class="panel panel-danger">
@@ -467,6 +546,7 @@
                                 </div>
                             </div>
                         </div> <!-- advanced -->
+
 
                     </form> <!-- config form -->
 
@@ -964,6 +1044,7 @@
                     });
             }
         });
+        
 
         //<!--RESTRICT_ON-->
         // sélection fichier de firmware

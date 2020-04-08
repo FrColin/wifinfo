@@ -136,6 +136,34 @@ struct JeedomConfig
     uint8_t filler[89];
 } __attribute__((packed));
 #endif
+
+#ifdef ENABLE_MQTT
+
+#define CFG_MQTT_HOST_LENGTH 32
+#define CFG_MQTT_TOPIC_LENGTH 48
+#define CFG_MQTT_DEFAULT_HOST ""
+#define CFG_MQTT_DEFAULT_PORT 1883
+#define CFG_MQTT_DEFAULT_TOPIC "wifinfo"
+
+#define CFG_FORM_MQTT_HOST FPSTR("mqtt_host")
+#define CFG_FORM_MQTT_PORT FPSTR("mqtt_port")
+#define CFG_FORM_MQTT_OUTTOPIC FPSTR("mqtt_out_topic")
+#define CFG_FORM_MQTT_INTOPIC FPSTR("mqtt_in_topic")
+#define CFG_FORM_MQTT_FREQ FPSTR("mqtt_freq")
+#define CFG_FORM_MQTT_TRIGGER_PTEC FPSTR("mqtt_trigger_ptec")
+#define CFG_FORM_MQTT_TRIGGER_ADPS FPSTR("mqtt_trigger_adps")
+
+struct MQTTConfig {
+    char host[CFG_HTTPREQ_HOST_LENGTH + 1]; // FQDN
+    uint16_t port;                          // port
+    char  outTopic[CFG_MQTT_TOPIC_LENGTH + 1];
+    char  inTopic[CFG_MQTT_TOPIC_LENGTH + 1];
+    uint32_t freq;                          // refresh rate
+    uint8_t trigger_adps : 1;
+    uint8_t trigger_ptec : 1;
+    uint8_t unused : 5;   // pour remplir l'octet
+} __attribute__((packed));
+#endif
 // Config for http request
 // 256 Bytes
 struct HttpreqConfig
@@ -199,6 +227,9 @@ struct Config
     HttpreqConfig httpreq;                  // HTTP request
     #ifdef ENABLE_RELAY
     RelayConfig relays[2];                  // Relay config   
+    #endif
+    #ifdef ENABLE_MQTT
+    MQTTConfig mqtt;                        // MQTT configuration
     #endif
     uint16_t crc;                           // CRC de validité du bloc de config
 } __attribute__((packed));
