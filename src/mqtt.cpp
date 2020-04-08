@@ -54,7 +54,7 @@ bool mqttReconnect() {
     if (mqttclient.connect(config.host)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      mqttclient.publish(config.mqtt.outTopic, "Here i am");
+      mqttPost("status", "started");
       // ... and resubscribe
       mqttclient.subscribe(config.mqtt.inTopic);
       return true;
@@ -75,7 +75,7 @@ bool mqttPost(const char * topic, const char* message)
   strcat(newtopic,"/");
   strcat(newtopic,topic);
   //Post on  topic
-  return mqttclient.publish(newtopic, message);
+  return mqttclient.publish_P(newtopic, message, false);
 }
 
 void mqtt_loop()

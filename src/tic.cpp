@@ -461,17 +461,9 @@ static bool relay_notif_periode_en_cours()
 #ifdef ENABLE_MQTT
 static void mqtt_notif()
 {
-    static String data;
-    data.clear();
+    String data;
     tic_get_json_dict(data, false);
-    Serial.printf("send MQTT Data length %d\n",data.length());
-    if (data.length() > MQTT_MAX_PACKET_SIZE ) {
-        Serial.printf("send MQTT Data length %d > %d\n",data.length(),MQTT_MAX_PACKET_SIZE);
-        mqttPost("data", "Buffer overflow");
-    } else {
-        Serial.printf("send MQTT Data length %d\n",data.length());
-        mqttPost("data", data.c_str());
-    }
+    mqttPost("data", data.c_str());
 }
 static void mqtt_notif_periode_en_cours()
 {
