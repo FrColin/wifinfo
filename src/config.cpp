@@ -22,7 +22,7 @@
 // All text above must be included in any redistribution.
 //
 // **********************************************************************************
-
+#include "debug.h"
 #include "wifinfo.h"
 #include "config.h"
 #include "jsonbuilder.h"
@@ -44,7 +44,7 @@ void config_setup()
     // Read Configuration from EEP
     if (config_read())
     {
-        Serial.println(F("Good CRC, not set! From now, we can use EEPROM config !"));
+        DEBUG_MSG_LN(F("Good CRC, not set! From now, we can use EEPROM config !"));
     }
     else
     {
@@ -54,7 +54,7 @@ void config_setup()
         // save back
         config_save();
 
-        Serial.println(F("Reset to default"));
+        DEBUG_MSG_LN(F("Reset to default"));
     }
 }
 
@@ -219,7 +219,7 @@ bool config_save()
     // default config and breaks OTA
     ret_code = config_read(false);
 
-    Serial.println(F("Write config "));
+    DEBUG_MSG_LN(F("Write config "));
 
     // return result
     return ret_code;
@@ -228,113 +228,113 @@ bool config_save()
 // print configuration
 void config_show()
 {
-    Serial.println();
-    Serial.println(F("===== Wi-Fi"));
-    Serial.print(F("ssid     :"));
-    Serial.println(config.ssid);
-    Serial.print(F("psk      :"));
-    Serial.println(config.psk);
-    Serial.print(F("host     :"));
-    Serial.println(config.host);
-    Serial.println(F("===== Advanced"));
-    Serial.print(F("ap_psk   :"));
-    Serial.println(config.ap_psk);
-    Serial.print(F("OTA auth :"));
-    Serial.println(config.ota_auth);
-    Serial.print(F("OTA port :"));
-    Serial.println(config.ota_port);
+    DEBUG_MSG_LN();
+    DEBUG_MSG_LN(F("===== Wi-Fi"));
+    DEBUG_MSG(F("ssid     :"));
+    DEBUG_MSG_LN(config.ssid);
+    DEBUG_MSG(F("psk      :"));
+    DEBUG_MSG_LN(config.psk);
+    DEBUG_MSG(F("host     :"));
+    DEBUG_MSG_LN(config.host);
+    DEBUG_MSG_LN(F("===== Advanced"));
+    DEBUG_MSG(F("ap_psk   :"));
+    DEBUG_MSG_LN(config.ap_psk);
+    DEBUG_MSG(F("OTA auth :"));
+    DEBUG_MSG_LN(config.ota_auth);
+    DEBUG_MSG(F("OTA port :"));
+    DEBUG_MSG_LN(config.ota_port);
 
-    Serial.print(F("Username :"));
-    Serial.println(config.username);
-    Serial.print(F("Password :"));
-    Serial.println(config.password);
+    DEBUG_MSG(F("Username :"));
+    DEBUG_MSG_LN(config.username);
+    DEBUG_MSG(F("Password :"));
+    DEBUG_MSG_LN(config.password);
 
-    Serial.print(F("SSE freq :"));
-    Serial.println(config.sse_freq);
+    DEBUG_MSG(F("SSE freq :"));
+    DEBUG_MSG_LN(config.sse_freq);
 
-    Serial.print(F("Config   :"));
+    DEBUG_MSG(F("Config   :"));
     if (config.options & OPTION_LED_TINFO)
     {
-        Serial.print(F(" LED_TINFO"));
+        DEBUG_MSG(F(" LED_TINFO"));
     }
-    Serial.println();
+    DEBUG_MSG_LN();
 #ifdef ENABLE_EMONCMS
-    Serial.println(F("===== Emoncms"));
-    Serial.print(F("host     :"));
-    Serial.println(config.emoncms.host);
-    Serial.print(F("port     :"));
-    Serial.println(config.emoncms.port);
-    Serial.print(F("url      :"));
-    Serial.println(config.emoncms.url);
-    Serial.print(F("key      :"));
-    Serial.println(config.emoncms.apikey);
-    Serial.print(F("node     :"));
-    Serial.println(config.emoncms.node);
-    Serial.print(F("freq     :"));
-    Serial.println(config.emoncms.freq);
+    DEBUG_MSG_LN(F("===== Emoncms"));
+    DEBUG_MSG(F("host     :"));
+    DEBUG_MSG_LN(config.emoncms.host);
+    DEBUG_MSG(F("port     :"));
+    DEBUG_MSG_LN(config.emoncms.port);
+    DEBUG_MSG(F("url      :"));
+    DEBUG_MSG_LN(config.emoncms.url);
+    DEBUG_MSG(F("key      :"));
+    DEBUG_MSG_LN(config.emoncms.apikey);
+    DEBUG_MSG(F("node     :"));
+    DEBUG_MSG_LN(config.emoncms.node);
+    DEBUG_MSG(F("freq     :"));
+    DEBUG_MSG_LN(config.emoncms.freq);
 #endif
 
 #ifdef ENABLE_JEEDOM
-    Serial.println(F("===== Jeedom"));
-    Serial.print(F("host     :"));
-    Serial.println(config.jeedom.host);
-    Serial.print(F("port     :"));
-    Serial.println(config.jeedom.port);
-    Serial.print(F("url      :"));
-    Serial.println(config.jeedom.url);
-    Serial.print(F("key      :"));
-    Serial.println(config.jeedom.apikey);
-    Serial.print(F("compteur :"));
-    Serial.println(config.jeedom.adco);
-    Serial.print(F("freq     :"));
-    Serial.println(config.jeedom.freq);
+    DEBUG_MSG_LN(F("===== Jeedom"));
+    DEBUG_MSG(F("host     :"));
+    DEBUG_MSG_LN(config.jeedom.host);
+    DEBUG_MSG(F("port     :"));
+    DEBUG_MSG_LN(config.jeedom.port);
+    DEBUG_MSG(F("url      :"));
+    DEBUG_MSG_LN(config.jeedom.url);
+    DEBUG_MSG(F("key      :"));
+    DEBUG_MSG_LN(config.jeedom.apikey);
+    DEBUG_MSG(F("compteur :"));
+    DEBUG_MSG_LN(config.jeedom.adco);
+    DEBUG_MSG(F("freq     :"));
+    DEBUG_MSG_LN(config.jeedom.freq);
 #endif
 
-    Serial.println(F("===== HTTP request"));
-    Serial.print(F("host      : "));
-    Serial.println(config.httpreq.host);
-    Serial.print(F("port      : "));
-    Serial.println(config.httpreq.port);
-    Serial.print(F("url       : "));
-    Serial.print(F("method    : "));
+    DEBUG_MSG_LN(F("===== HTTP request"));
+    DEBUG_MSG(F("host      : "));
+    DEBUG_MSG_LN(config.httpreq.host);
+    DEBUG_MSG(F("port      : "));
+    DEBUG_MSG_LN(config.httpreq.port);
+    DEBUG_MSG(F("url       : "));
+    DEBUG_MSG(F("method    : "));
     if (config.httpreq.use_post)
     {
-        Serial.println(F("POST"));
+        DEBUG_MSG_LN(F("POST"));
     }
     else
     {
-        Serial.println(F("GET"));
+        DEBUG_MSG_LN(F("GET"));
     }
-    Serial.println(config.httpreq.url);
-    Serial.print(F("freq      : "));
-    Serial.println(config.httpreq.freq);
-    Serial.print(F("notifs    :"));
+    DEBUG_MSG_LN(config.httpreq.url);
+    DEBUG_MSG(F("freq      : "));
+    DEBUG_MSG_LN(config.httpreq.freq);
+    DEBUG_MSG(F("notifs    :"));
     if (config.httpreq.trigger_ptec)
     {
-        Serial.print(F(" PTEC"));
+        DEBUG_MSG(F(" PTEC"));
     }
     if (config.httpreq.trigger_adps)
     {
-        Serial.print(F(" ADPS"));
+        DEBUG_MSG(F(" ADPS"));
     }
     if (config.httpreq.trigger_seuils)
     {
-        Serial.print(F(" seuils"));
+        DEBUG_MSG(F(" seuils"));
     }
-    Serial.println();
-    Serial.print(F("seuil bas : "));
-    Serial.println(config.httpreq.seuil_bas);
-    Serial.print(F("seuil haut: "));
-    Serial.println(config.httpreq.seuil_haut);
+    DEBUG_MSG_LN();
+    DEBUG_MSG(F("seuil bas : "));
+    DEBUG_MSG_LN(config.httpreq.seuil_bas);
+    DEBUG_MSG(F("seuil haut: "));
+    DEBUG_MSG_LN(config.httpreq.seuil_haut);
 
 #ifdef ENABLE_RELAY
-    Serial.println("\r\n===== Relais"); 
-    Serial.print(F("relai 0  state:"));
-    Serial.println(config.relays[0].u.all,BIN); 
-    Serial.print(F("relai 1  state:"));
-    Serial.println(config.relays[1].u.all, BIN); 
+    DEBUG_MSG_LN("\r\n===== Relais"); 
+    DEBUG_MSG(F("relai 0  state:"));
+    DEBUG_MSG_LN(config.relays[0].u.all,BIN); 
+    DEBUG_MSG(F("relai 1  state:"));
+    DEBUG_MSG_LN(config.relays[1].u.all, BIN); 
 #endif   
-    Serial.flush();
+    DEBUG_FLUSH();
 }
 
 // Return JSON string containing configuration data
@@ -409,10 +409,10 @@ void config_handle_form(ESP8266WebServer &server, bool restricted)
     // We validated config ?
     if (server.hasArg("save"))
     {
-        Serial.println(F("===== Posted configuration"));
+        DEBUG_MSG_LN(F("===== Posted configuration"));
         for (int i = 0; i < server.args(); ++i)
-            Serial.printf("  %3d  %-20s = %s\n", i, server.argName(i).c_str(), server.arg(i).c_str());
-        Serial.println(F("===== Posted configuration"));
+            DEBUG_MSGF("  %3d  %-20s = %s\n", i, server.argName(i).c_str(), server.arg(i).c_str());
+        DEBUG_MSG_LN(F("===== Posted configuration"));
 
         // Wi-Fi et avancé
         if (!restricted)
@@ -492,7 +492,7 @@ void config_handle_form(ESP8266WebServer &server, bool restricted)
         response = PSTR("Missing Form Field");
     }
 
-    Serial.printf_P(PSTR("Sending response %d %s\n"), ret, response);
+    DEBUG_MSGF(PSTR("Sending response %d %s\n"), ret, response);
 
     server.send(ret, mime::mimeTable[mime::txt].mimeType, response);
 

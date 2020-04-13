@@ -1,6 +1,6 @@
 // module téléinformation client
 // rene-d 2020
-
+#include "debug.h"
 #include "wifinfo.h"
 #include "led.h"
 #include "sys.h"
@@ -34,14 +34,14 @@ static const char update_html[] PROGMEM = R"html(<!DOCTYPE html>
 //
 static void sys_update_finish(ESP8266WebServer &server, bool finish = false)
 {
-    Serial.println(F("sys_update_finish"));
+    DEBUG_MSG_LN(F("sys_update_finish"));
     led_off();
     blink.detach();
     tinfo_pause = false;
 
     if (Update.hasError())
     {
-        Serial.print("Update error: ");
+        DEBUG_MSG("Update error: ");
 #ifdef ENABLE_DEBUG
         Update.printError(Serial);
 #endif
@@ -49,7 +49,7 @@ static void sys_update_finish(ESP8266WebServer &server, bool finish = false)
 
     sys_update_is_ok = Update.end(finish);
 
-    Serial.printf("sys_update_is_ok %d\n", sys_update_is_ok);
+    DEBUG_MSGF("sys_update_is_ok %d\n", sys_update_is_ok);
 
     server.sendHeader("Connection", "close");
     server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -81,8 +81,8 @@ void sys_update_register(ESP8266WebServer &server)
             {
                 if (sys_update_is_ok)
                 {
-                    Serial.println(F("upload terminated: restart"));
-                    Serial.flush();
+                    DEBUG_MSG_LN(F("upload terminated: restart"));
+                    DEBUG_FLUSH();
 
                     // reboot dans 0.5s
                     blink.once_ms(500, [] {
@@ -91,7 +91,7 @@ void sys_update_register(ESP8266WebServer &server)
                 }
                 else
                 {
-                    Serial.println(F("upload terminated: update has error"));
+                    DEBUG_MSG_LN(F("upload terminated: update has error"));
                 }
             }
         },
@@ -103,7 +103,7 @@ void sys_update_register(ESP8266WebServer &server)
 
             if (upload.status == UPLOAD_FILE_START)
             {
-                Serial.printf_P(PSTR("upload start: %s (%u bytes)\n"), upload.filename.c_str(), upload.contentLength);
+                DEBUG_MSGF_P(PSTR("upload start: %s (%u bytes)\n"), upload.filename.c_str(), upload.contentLength);
                 blink.attach_ms(333, [] {
                     led_toggle();
                 });
@@ -132,17 +132,17 @@ void sys_update_register(ESP8266WebServer &server)
                     uintptr_t updateEndAddress = (uintptr_t)&_FS_start - 0x40200000;
                     updateStartAddress = (updateEndAddress > roundedSize) ? (updateEndAddress - roundedSize) : 0;
 
-                    Serial.printf_P(PSTR("[begin] max_size:           0x%08zX (%zd)\n"), max_size, max_size);
-                    Serial.printf_P(PSTR("[begin] roundedSize:        0x%08zX (%zd)\n"), roundedSize, roundedSize);
-                    Serial.printf_P(PSTR("[begin] updateStartAddress: 0x%08zX (%zd)\n"), updateStartAddress, updateStartAddress);
-                    Serial.printf_P(PSTR("[begin] updateEndAddress:   0x%08zX (%zd)\n"), updateEndAddress, updateEndAddress);
-                    Serial.printf_P(PSTR("[begin] currentSketchSize:  0x%08zX (%zd)\n"), currentSketchSize, currentSketchSize);
+                    DEBUG_MSGf_P(PSTR("[begin] max_size:           0x%08zX (%zd)\n"), max_size, max_size);
+                    DEBUG_MSGf_P(PSTR("[begin] roundedSize:        0x%08zX (%zd)\n"), roundedSize, roundedSize);
+                    DEBUG_MSGf_P(PSTR("[begin] updateStartAddress: 0x%08zX (%zd)\n"), updateStartAddress, updateStartAddress);
+                    DEBUG_MSGf_P(PSTR("[begin] updateEndAddress:   0x%08zX (%zd)\n"), updateEndAddress, updateEndAddress);
+                    DEBUG_MSGf_P(PSTR("[begin] currentSketchSize:  0x%08zX (%zd)\n"), currentSketchSize, currentSketchSize);
 #endif
                 }
 
                 if (!Update.begin(max_size, command))
                 {
-                    Serial.printf("begin error %d %d\n", max_size, command);
+                    DEBUG_MSGF("begin error %d %d\n", max_size, command);
                     sys_update_finish(server);
                 }
                 else
@@ -152,23 +152,23 @@ void sys_update_register(ESP8266WebServer &server)
             }
             else if (upload.status == UPLOAD_FILE_WRITE)
             {
-                Serial.print('.');
+                DEBUG_MSG('.');
 
                 if (Update.write(upload.buf, upload.currentSize) != upload.currentSize)
                 {
-                    Serial.println(F("write error"));
+                    DEBUG_MSG_LN(F("write error"));
 
                     sys_update_finish(server);
                 }
             }
             else if (upload.status == UPLOAD_FILE_END)
             {
-                Serial.println(F("upload end"));
+                DEBUG_MSG_LN(F("upload end"));
                 sys_update_finish(server, true);
             }
             else if (upload.status == UPLOAD_FILE_ABORTED)
             {
-                Serial.println(F("upload aborted"));
+                DEBUG_MSG_LN(F("upload aborted"));
                 sys_update_finish(server);
             }
         });

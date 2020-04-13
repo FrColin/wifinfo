@@ -11,7 +11,7 @@
 
   This example code is in the public domain.
 */
-
+#include "debug.h"
 #include "wifinfo.h"
 #include "timesync.h"
 
@@ -49,14 +49,15 @@
 #define MYTZ TZ_Europe_Paris
 
 ////////////////////////////////////////////////////////
+#ifdef ENABLE_DEBUG
 
 #define PTM(w)                \
-    Serial.print(" " #w "="); \
-    Serial.print(tm->tm_##w);
+    DEBUG_MSG(" " #w "="); \
+    DEBUG_MSG(tm->tm_##w);
 
 static void print_tm(const char *what, const tm *tm)
 {
-    Serial.print(what);
+    DEBUG_MSG(what);
     PTM(isdst);
     PTM(yday);
     PTM(wday);
@@ -79,35 +80,35 @@ void time_show()
     now_ms = millis();
     now_us = micros();
 
-    Serial.println();
+    DEBUG_MSG_LN();
     print_tm("localtime:", localtime(&now));
-    Serial.println();
+    DEBUG_MSG_LN();
     print_tm("gmtime:   ", gmtime(&now));
-    Serial.println();
+    DEBUG_MSG_LN();
 
     // time from boot
-    Serial.print("millis:    ");
-    Serial.println(now_ms);
-    Serial.print("micros:    ");
-    Serial.println(now_us);
+    DEBUG_MSG("millis:    ");
+    DEBUG_MSG_LN(now_ms);
+    DEBUG_MSG("micros:    ");
+    DEBUG_MSG_LN(now_us);
 
     // EPOCH+tz+dst
-    Serial.print("gtod:      ");
-    Serial.print((uint32_t)tv.tv_sec);
-    Serial.print("s / ");
-    Serial.print((uint32_t)tv.tv_usec);
-    Serial.println("us");
+    DEBUG_MSG("gtod:      ");
+    DEBUG_MSG((uint32_t)tv.tv_sec);
+    DEBUG_MSG("s / ");
+    DEBUG_MSG((uint32_t)tv.tv_usec);
+    DEBUG_MSG_LN("us");
 
     // EPOCH+tz+dst
-    Serial.print("time:      ");
-    Serial.println((uint32_t)now);
+    DEBUG_MSG("time:      ");
+    DEBUG_MSG_LN((uint32_t)now);
 
     // timezone and demo in the future
-    Serial.printf("timezone:  %s\n", MYTZ);
+    DEBUG_MSGF("timezone:  %s\n", MYTZ);
 
     // human readable
-    Serial.print("ctime:     ");
-    Serial.print(ctime(&now));
+    DEBUG_MSG("ctime:     ");
+    DEBUG_MSG(ctime(&now));
 
 #if LWIP_VERSION_MAJOR > 1
     // LwIP v2 is able to list more details about the currently configured SNTP servers
@@ -117,28 +118,31 @@ void time_show()
         const char *name = sntp_getservername(i);
         if (sntp.isSet())
         {
-            Serial.printf("sntp%d:     ", i);
+            DEBUG_MSGF("sntp%d:     ", i);
             if (name)
             {
-                Serial.printf("%s (%s) ", name, sntp.toString().c_str());
+                DEBUG_MSGF("%s (%s) ", name, sntp.toString().c_str());
             }
             else
             {
-                Serial.printf("%s ", sntp.toString().c_str());
+                DEBUG_MSGF("%s ", sntp.toString().c_str());
             }
-            Serial.printf("%s Reachability: %d\n", sntp.isV6() ? "IPv6" : "IPv4", sntp_getreachability(i));
+            DEBUG_MSGF("%s Reachability: %d\n", sntp.isV6() ? "IPv6" : "IPv4", sntp_getreachability(i));
         }
     }
 #endif
 
-    Serial.println();
+    DEBUG_MSG_LN();
 }
+#endif
 
 static void time_is_set_scheduled()
 {
+#ifdef ENABLE_DEBUG
     time_t now = time(nullptr);
-    Serial.print("SNTP updated, time: ");
-    Serial.print(ctime(&now));
+    DEBUG_MSG("SNTP updated, time: ");
+    DEBUG_MSG(ctime(&now));
+#endif
 }
 
 void time_setup()

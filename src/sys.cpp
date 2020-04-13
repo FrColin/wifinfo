@@ -22,7 +22,7 @@
 // All text above must be included in any redistribution.
 //
 // **********************************************************************************
-
+#include "debug.h"
 #include "wifinfo.h"
 #include "sys.h"
 #include "cpuload.h"
@@ -223,21 +223,21 @@ int sys_wifi_connect()
     int ret = WiFi.status();
 
     // #ifdef ENABLE_DEBUG
-    //     Serial.println("========== WiFi diags start");
+    //     DEBUG_MSG_LN("========== WiFi diags start");
     //     WiFi.printDiag(Serial);
-    //     Serial.println("========== WiFi diags end");
-    //     Serial.flush();
+    //     DEBUG_MSG_LN("========== WiFi diags end");
+    //     DEBUG_FLUSH();
     // #endif
 
     // no correct SSID
     if (!*config.ssid)
     {
-        Serial.print(F("no Wifi SSID in config, trying to get SDK ones..."));
+        DEBUG_MSG(F("no Wifi SSID in config, trying to get SDK ones..."));
 
         // Let's see of SDK one is okay
         if (WiFi.SSID() == "")
         {
-            Serial.println(F("Not found may be blank chip!"));
+            DEBUG_MSG_LN(F("Not found may be blank chip!"));
         }
         else
         {
@@ -253,7 +253,7 @@ int sys_wifi_connect()
             {
                 *config.psk = '\0';
             }
-            Serial.println("found one!");
+            DEBUG_MSG_LN("found one!");
 
             // save back new config
             config_save();
@@ -265,26 +265,26 @@ int sys_wifi_connect()
     {
         uint8_t timeout;
 
-        Serial.print(F("Connecting to: "));
-        Serial.println(config.ssid);
-        Serial.flush();
+        DEBUG_MSG(F("Connecting to: "));
+        DEBUG_MSG_LN(config.ssid);
+        DEBUG_FLUSH();
 
         // Do wa have a PSK ?
         if (*config.psk)
         {
             // protected network
-            Serial.print(F(" with key '"));
-            Serial.print(config.psk);
-            Serial.print(F("'..."));
-            Serial.flush();
+            DEBUG_MSG(F(" with key '"));
+            DEBUG_MSG(config.psk);
+            DEBUG_MSG(F("'..."));
+            DEBUG_FLUSH();
 
             WiFi.begin(config.ssid, config.psk);
         }
         else
         {
             // Open network
-            Serial.print(F("unsecure AP"));
-            Serial.flush();
+            DEBUG_MSG(F("unsecure AP"));
+            DEBUG_FLUSH();
             WiFi.begin(config.ssid);
         }
 
@@ -304,20 +304,20 @@ int sys_wifi_connect()
     if (ret == WL_CONNECTED)
     {
         nb_reconnect++; // increase reconnections count
-        Serial.println(F("connected!"));
+        DEBUG_MSG_LN(F("connected!"));
         WiFi.mode(WIFI_STA);
-        Serial.print(F("IP address   : "));
-        Serial.println(WiFi.localIP());
-        Serial.print(F("MAC address  : "));
-        Serial.println(WiFi.macAddress());
+        DEBUG_MSG(F("IP address   : "));
+        DEBUG_MSG_LN(WiFi.localIP());
+        DEBUG_MSG(F("MAC address  : "));
+        DEBUG_MSG_LN(WiFi.macAddress());
 
         // not connected ? start AP
     }
     else
     {
         char ap_ssid[32];
-        Serial.println("Error!");
-        Serial.flush();
+        DEBUG_MSG_LN("Error!");
+        DEBUG_FLUSH();
 
         // STA+AP Mode without connected to STA, autoconnect will search
         // other frequencies while trying to connect, this is causing issue
@@ -329,35 +329,35 @@ int sys_wifi_connect()
         // SSID = hostname
         strncpy_s(ap_ssid, config.host, sizeof(ap_ssid) - 1);
 
-        Serial.print(F("Switching to AP "));
-        Serial.println(ap_ssid);
-        Serial.flush();
+        DEBUG_MSG(F("Switching to AP "));
+        DEBUG_MSG_LN(ap_ssid);
+        DEBUG_FLUSH();
 
         // protected network
         if (*config.ap_psk)
         {
-            Serial.print(F(" with key '"));
-            Serial.print(config.ap_psk);
-            Serial.println(F("'"));
+            DEBUG_MSG(F(" with key '"));
+            DEBUG_MSG(config.ap_psk);
+            DEBUG_MSG_LN(F("'"));
             WiFi.softAP(ap_ssid, config.ap_psk);
             // Open network
         }
         else
         {
-            Serial.println(F(" with no password"));
+            DEBUG_MSG_LN(F(" with no password"));
             WiFi.softAP(ap_ssid);
         }
         WiFi.mode(WIFI_AP_STA);
 
-        Serial.print(F("IP address   : "));
-        Serial.println(WiFi.softAPIP());
-        Serial.print(F("MAC address  : "));
-        Serial.println(WiFi.softAPmacAddress());
+        DEBUG_MSG(F("IP address   : "));
+        DEBUG_MSG_LN(WiFi.softAPIP());
+        DEBUG_MSG(F("MAC address  : "));
+        DEBUG_MSG_LN(WiFi.softAPmacAddress());
     }
     // Version 1.0.7 : Use auto reconnect Wifi
     WiFi.setAutoConnect(true);
     WiFi.setAutoReconnect(true);
-    Serial.println(F("auto-reconnect armed !"));
+    DEBUG_MSG_LN(F("auto-reconnect armed !"));
 
 #ifdef ENABLE_OTA
     // // Set OTA parameters
@@ -388,11 +388,11 @@ int sys_wifi_connect()
 void sys_handle_factory_reset(ESP8266WebServer &server)
 {
     // Just to debug where we are
-    Serial.println(F("Serving /factory_reset page..."));
+    DEBUG_MSG_LN(F("Serving /factory_reset page..."));
     config_reset();
     ESP.eraseConfig();
     server.send(200, mime::mimeTable[mime::txt].mimeType, "Reset");
-    Serial.println(F("Ok!"));
+    DEBUG_MSG_LN(F("Ok!"));
     delay(1000);
     ESP.restart();
 }
@@ -401,9 +401,9 @@ void sys_handle_factory_reset(ESP8266WebServer &server)
 void sys_handle_reset(ESP8266WebServer &server)
 {
     // Just to debug where we are
-    Serial.println(F("Serving /reset page..."));
+    DEBUG_MSG_LN(F("Serving /reset page..."));
     server.send(200, mime::mimeTable[mime::txt].mimeType, "Restart");
-    Serial.println(F("Ok!"));
+    DEBUG_MSG_LN(F("Ok!"));
     delay(1000);
     ESP.restart();
 }
@@ -415,12 +415,12 @@ void sys_ota_setup()
     // OTA callbacks
     ArduinoOTA.onStart([]() {
         led_on();
-        Serial.println(F("Update started"));
+        DEBUG_MSG_LN(F("Update started"));
     });
 
     ArduinoOTA.onEnd([]() {
         led_off();
-        Serial.println(F("Update finished : restarting"));
+        DEBUG_MSG_LN(F("Update finished : restarting"));
     });
 
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
@@ -428,17 +428,17 @@ void sys_ota_setup()
     });
 
     ArduinoOTA.onError([](ota_error_t error) {
-        Serial.printf_P(PSTR("Update Error[%u]: "), error);
+        DEBUG_MSGf_P(PSTR("Update Error[%u]: "), error);
         if (error == OTA_AUTH_ERROR)
-            Serial.println(F("Auth Failed"));
+            DEBUG_MSG_LN(F("Auth Failed"));
         else if (error == OTA_BEGIN_ERROR)
-            Serial.println(F("Begin Failed"));
+            DEBUG_MSG_LN(F("Begin Failed"));
         else if (error == OTA_CONNECT_ERROR)
-            Serial.println(F("Connect Failed"));
+            DEBUG_MSG_LN(F("Connect Failed"));
         else if (error == OTA_RECEIVE_ERROR)
-            Serial.println(F("Receive Failed"));
+            DEBUG_MSG_LN(F("Receive Failed"));
         else if (error == OTA_END_ERROR)
-            Serial.println(F("End Failed"));
+            DEBUG_MSG_LN(F("End Failed"));
 
         ESP.restart();
     });

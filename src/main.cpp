@@ -23,14 +23,14 @@ void print_reset_reason(uint32 reason)
 {
   switch ( reason)
   {
-    case 0 : Serial.println ("REASON_DEFAULT_RST");break;
-    case 1 : Serial.println ("REASON_WDT_RST");break; 
-    case 2:  Serial.println ("REASON_EXCEPTION_RST");break; 
-    case 3 : Serial.println ("REASON_SOFT_WDT_RST");break;               
-    case 4 : Serial.println ("REASON_SOFT_RESTART");break;             
-    case 5 : Serial.println ("REASON_DEEP_SLEEP_AWAKE");break;        
-    case 6 : Serial.println ("REASON_EXT_SYS_RST");break;             
-    default : Serial.println ("NO_MEAN");
+    case 0 : DEBUG_MSG_LN ("REASON_DEFAULT_RST");break;
+    case 1 : DEBUG_MSG_LN ("REASON_WDT_RST");break; 
+    case 2:  DEBUG_MSG_LN ("REASON_EXCEPTION_RST");break; 
+    case 3 : DEBUG_MSG_LN ("REASON_SOFT_WDT_RST");break;               
+    case 4 : DEBUG_MSG_LN ("REASON_SOFT_RESTART");break;             
+    case 5 : DEBUG_MSG_LN ("REASON_DEEP_SLEEP_AWAKE");break;        
+    case 6 : DEBUG_MSG_LN ("REASON_EXT_SYS_RST");break;             
+    default : DEBUG_MSG_LN ("NO_MEAN");
   }
 }
 
@@ -47,20 +47,20 @@ void setup()
 #ifdef ENABLE_DEBUG
     // en debug, on reste à 115200: on ne se branche pas au compteur
     Serial.begin(115200);
-#else
-    // sinon, RX est utilisé pour la téléinfo. TX est coupé
-    //Serial.begin(1200, SERIAL_7E1, SERIAL_RX_ONLY);
-    Serial.begin(1200, SERIAL_7E1);
-#endif
-    Serial.println("CPU0 reset reason: ");
+    DEBUG_MSG_LN("CPU0 reset reason: ");
     rst_info *resetInfo;
     resetInfo = ESP.getResetInfoPtr();
     print_reset_reason(resetInfo->reason);
   
-    Serial.flush();
+    DEBUG_FLUSH();
 
-    Serial.println(R"(WIFINFO)");
-    Serial.flush();
+    DEBUG_MSG_LN(R"(WIFINFO)");
+    DEBUG_FLUSH();
+#else
+    // sinon, RX est utilisé pour la téléinfo. TX est coupé
+    Serial.begin(1200, SERIAL_7E1, SERIAL_RX_ONLY);
+#endif
+
 
     // chargement de la conf depuis l'EEPROM
     config_setup();
@@ -100,10 +100,10 @@ void setup()
     // active les timers de notification en fonction de la conf
     tic_make_timers();
 
-    Serial.println();
-    Serial.print(F("IP address: http://"));
-    Serial.println(WiFi.localIP());
-    Serial.flush();
+    DEBUG_MSG_LN();
+    DEBUG_MSG(F("IP address: http://"));
+    DEBUG_MSG_LN(WiFi.localIP());
+    DEBUG_FLUSH();
 
     led_off();
     ESP.wdtFeed(); //Force software watchdog to restart from 0

@@ -168,7 +168,7 @@ void cli_setup()
         if (arg == "restart")
         {
             Serial.println(F("restart..."));
-            Serial.flush();
+            DEBUG_FLUSH();
 
             ESP.restart();
             while (true)
@@ -194,7 +194,7 @@ void cli_setup()
             delay(500);
 
             Serial.println(F("restart..."));
-            Serial.flush();
+            DEBUG_FLUSH();
 
             ESP.restart();
             while (true)
@@ -247,7 +247,7 @@ void cli_setup()
 #ifdef ENABLE_DEBUG
         WiFi.printDiag(Serial);
 #endif
-        Serial.flush();
+        DEBUG_FLUSH();
     });
 
     cli.setOnError([](cmd_error *errorPtr) {

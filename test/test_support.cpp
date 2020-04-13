@@ -35,43 +35,43 @@ TEST(support, SerialClass)
     SerialClass::buffer.clear();
     SerialClass::flush_called = 0;
 
-    Serial.flush();
+    DEBUG_FLUSH();
     EXPECT_EQ(SerialClass::flush_called, 1);
     EXPECT_EQ(SerialClass::buffer.length(), 0u);
     SerialClass::flush_called = 0;
     SerialClass::buffer.clear();
 
-    Serial.println();
+    DEBUG_MSG_LN();
     EXPECT_EQ(SerialClass::buffer, "\n");
     SerialClass::buffer.clear();
 
-    Serial.print("toto");
+    DEBUG_MSG("toto");
     EXPECT_EQ(SerialClass::buffer, "toto");
     SerialClass::buffer.clear();
 
-    Serial.println("toto");
+    DEBUG_MSG_LN("toto");
     EXPECT_EQ(SerialClass::buffer, "toto\n");
     SerialClass::buffer.clear();
 
-    Serial.print(lol);
+    DEBUG_MSG(lol);
     EXPECT_EQ(SerialClass::buffer, "lol");
     SerialClass::buffer.clear();
 
-    Serial.println(lol);
+    DEBUG_MSG_LN(lol);
     EXPECT_EQ(SerialClass::buffer, "lol\n");
     SerialClass::buffer.clear();
 
-    Serial.print('a');
+    DEBUG_MSG('a');
     EXPECT_EQ(SerialClass::buffer, "a");
     SerialClass::buffer.clear();
 
-    Serial.println('a');
+    DEBUG_MSG_LN('a');
     EXPECT_EQ(SerialClass::buffer, "a\n");
     SerialClass::buffer.clear();
 
-    Serial.print("a");
-    Serial.println("b");
-    Serial.println(10);
+    DEBUG_MSG("a");
+    DEBUG_MSG_LN("b");
+    DEBUG_MSG_LN(10);
     EXPECT_EQ(SerialClass::buffer, "ab\n10\n");
 
     EXPECT_EQ(SerialClass::flush_called, 0);

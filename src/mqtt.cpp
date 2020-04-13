@@ -23,7 +23,7 @@
 
 
 #ifdef ENABLE_MQTT
-
+#include "debug.h"
 #include "config.h"
 #include "mqtt.h"
 
@@ -33,35 +33,37 @@ PubSubClient mqttclient(espClient);
 long lastReconnectAttempt = 0;
 
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.println("]");
-  Serial.print("[");
+
+  DEBUG_MSG("Message arrived [");
+  DEBUG_MSG(topic);
+  DEBUG_MSG_LN("]");
+  DEBUG_MSG("[");
   for (unsigned int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+    DEBUG_MSG((char)payload[i]);
   }
-  Serial.println("]");
+  DEBUG_MSG_LN("]");
+
 }
 
 bool mqttReconnect() {
  
   // Loop until we're reconnected
   if (!mqttclient.connected() ) {
-    Serial.println("Attempting MQTT connection...");
+    DEBUG_MSG_LN("Attempting MQTT connection...");
 
     //client.connect(config.host, "testuser", "testpass")
     // Attempt to connect
     if (mqttclient.connect(config.host)) {
-      Serial.println("connected");
+      DEBUG_MSG_LN("connected");
       // Once connected, publish an announcement...
       mqttPost("status", "started");
       // ... and resubscribe
       mqttclient.subscribe(config.mqtt.inTopic);
       return true;
     } else {
-      Serial.print("failed, rc=");
-      Serial.print(mqttclient.state());
-      Serial.println(" try again later");
+      DEBUG_MSG("failed, rc=");
+      DEBUG_MSG(mqttclient.state());
+      DEBUG_MSG_LN(" try again later");
     }
   }
   return mqttclient.connected();
