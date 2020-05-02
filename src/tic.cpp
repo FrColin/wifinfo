@@ -1,6 +1,8 @@
 // module téléinformation client
 // rene-d 2020
 #include <PolledTimeout.h>
+#include "debug.h"
+#include "logger.h"
 #include "wifinfo.h"
 #include "tic.h"
 #include "config.h"
@@ -180,24 +182,24 @@ void tic_make_timers()
     if ((config.httpreq.freq == 0) || (config.httpreq.host[0] == 0) || (config.httpreq.port == 0))
     {
         timer_http.resetToNeverExpires();
-        Serial.println(F("timer_http disabled"));
+        DEBUG_MSG_LN(F("timer_http disabled"));
     }
     else
     {
         timer_http.reset(config.httpreq.freq * 1000);
-        Serial.printf_P(PSTR("timer_http enabled, freq=%d s\n"), config.httpreq.freq);
+        DEBUG_MSGF_P(PSTR("timer_http enabled, freq=%d s\n"), config.httpreq.freq);
     }
 #ifdef ENABLE_JEEDOM
     // jeedom
     if ((config.jeedom.freq == 0) || (config.jeedom.host[0] == 0) || (config.jeedom.port == 0))
     {
         timer_jeedom.resetToNeverExpires();
-        Serial.println("timer_jeedom disabled");
+        DEBUG_MSG_LN("timer_jeedom disabled");
     }
     else
     {
         timer_jeedom.reset(config.jeedom.freq * 1000);
-        Serial.printf_P(PSTR("timer_jeedom enabled, freq=%d s\n"), config.jeedom.freq);
+        DEBUG_MSGF_P(PSTR("timer_jeedom enabled, freq=%d s\n"), config.jeedom.freq);
     }
 #endif
 #ifdef ENABLE_EMONCMS
@@ -205,12 +207,12 @@ void tic_make_timers()
     if ((config.emoncms.freq == 0) || (config.emoncms.host[0] == 0) || (config.emoncms.port == 0))
     {
         timer_emoncms.resetToNeverExpires();
-        Serial.println("timer_emoncms disabled");
+        DEBUG_MSG_LN("timer_emoncms disabled");
     }
     else
     {
         timer_emoncms.reset(config.emoncms.freq * 1000);
-        Serial.printf_P(PSTR("timer_emoncms enabled, freq=%d s\n"), config.emoncms.freq);
+        DEBUG_MSGF_P(PSTR("timer_emoncms enabled, freq=%d s\n"), config.emoncms.freq);
     }
 #endif
 #ifdef ENABLE_MQTT
@@ -218,24 +220,24 @@ void tic_make_timers()
     if ((config.mqtt.freq == 0) || (config.mqtt.host[0] == 0) || (config.mqtt.port == 0))
     {
         timer_mqtt.resetToNeverExpires();
-        Serial.println("timer_mqtt disabled");
+        DEBUG_MSG_LN("timer_mqtt disabled");
     }
     else
     {
         timer_mqtt.reset(config.mqtt.freq * 1000);
-        Serial.printf_P(PSTR("timer_mqtt enabled, freq=%d s\n"), config.mqtt.freq);
+        DEBUG_MSGF_P(PSTR("timer_mqtt enabled, freq=%d s\n"), config.mqtt.freq);
     }
 #endif
     // connexions SSE
     if (config.sse_freq == 0)
     {
         timer_sse.reset(esp8266::polledTimeout::periodicMs::alwaysExpired);
-        Serial.println("timer_sse always expired");
+        DEBUG_MSG_LN("timer_sse always expired");
     }
     else
     {
         timer_sse.reset(config.sse_freq * 1000);
-        Serial.printf_P(PSTR("timer_sse enabled, freq=%d s\n"), config.sse_freq);
+        DEBUG_MSGF_P(PSTR("timer_sse enabled, freq=%d s\n"), config.sse_freq);
     }
 }
 
@@ -428,13 +430,13 @@ static void http_notif(const char *notif)
 
         tic_get_json_dict_notif(data, notif);
 
-        Serial.printf_P(PSTR("http_notif: POST %s\n"), notif);
+        DEBUG_MSGF_P(PSTR("http_notif: POST %s\n"), notif);
 
         http_request(config.httpreq.host, config.httpreq.port, uri, data.c_str());
     }
     else
     {
-        Serial.printf_P(PSTR("http_notif: GET %s\n"), notif);
+        DEBUG_MSGF_P(PSTR("http_notif: GET %s\n"), notif);
         http_request(config.httpreq.host, config.httpreq.port, uri);
     }
 }
@@ -790,6 +792,6 @@ void tic_dump()
 {
     char raw[Teleinfo::MAX_FRAME_SIZE];
     tinfo.get_frame_ascii(raw, sizeof(raw));
-    Serial.println(tinfo.get_timestamp_iso8601());
-    Serial.println(raw);
+    DEBUG_MSG_LN(tinfo.get_timestamp_iso8601());
+    DEBUG_MSG_LN(raw);
 }

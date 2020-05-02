@@ -1,13 +1,15 @@
 // module téléinformation client
 // rene-d 2020
+#include <ESP8266WebServer.h>
+#include <Ticker.h>
 #include "debug.h"
+#include "logger.h"
 #include "wifinfo.h"
 #include "led.h"
 #include "sys.h"
 #include "tic.h"
 #include "webserver.h"
-#include <ESP8266WebServer.h>
-#include <Ticker.h>
+
 
 
 // these variables are set by the linker
@@ -35,6 +37,7 @@ static const char update_html[] PROGMEM = R"html(<!DOCTYPE html>
 static void sys_update_finish(ESP8266WebServer &server, bool finish = false)
 {
     DEBUG_MSG_LN(F("sys_update_finish"));
+    LOG_MSG(LOG_INFO,"sys_update_finish");
     led_off();
     blink.detach();
     tinfo_pause = false;
@@ -45,11 +48,13 @@ static void sys_update_finish(ESP8266WebServer &server, bool finish = false)
 #ifdef ENABLE_DEBUG
         Update.printError(Serial);
 #endif
+        LOG_MSGF(LOG_ERR,"Update error: %d",Update.getError());
     }
 
     sys_update_is_ok = Update.end(finish);
 
     DEBUG_MSGF("sys_update_is_ok %d\n", sys_update_is_ok);
+    LOG_MSGF(LOG_INFO,"sys_update_is_ok %d", sys_update_is_ok);
 
     server.sendHeader("Connection", "close");
     server.sendHeader("Access-Control-Allow-Origin", "*");

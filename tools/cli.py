@@ -468,7 +468,7 @@ class Miniterm(object):
                 try:
                     c = self.console.getkey()
                 except KeyboardInterrupt:
-                    c = "\x03"
+                    c = chr(0x03)
                 if not self.alive:
                     break
 

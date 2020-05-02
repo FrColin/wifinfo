@@ -17,8 +17,14 @@
 #include "webserver.h"
 #include "bt_relay.h"
 #include "mqtt.h"
+#include "logger.h"
 
-
+#ifdef SYSLOG
+// A UDP instance to let us send and receive packets over UDP
+WiFiUDP udpClient;
+// Create a new empty syslog instance
+Syslog syslog(udpClient, SYSLOG_PROTO_IETF);
+#endif
 void print_reset_reason(uint32 reason)
 {
   switch ( reason)
@@ -33,13 +39,23 @@ void print_reset_reason(uint32 reason)
     default : DEBUG_MSG_LN ("NO_MEAN");
   }
 }
+unsigned long now;
+unsigned long last_receive;
+int teleinfo_off_min;
 
 void setup()
 {
 
     // Set CPU speed to 160MHz
     system_update_cpu_freq(160);
-
+#ifdef SYSLOG
+  // prepare syslog configuration here (can be anywhere before first call of 
+  // log/logf method)
+  syslog.server(SYSLOG_SERVER, SYSLOG_PORT);
+  syslog.deviceHostname(DEVICE_HOSTNAME);
+  syslog.appName(APP_NAME);
+  syslog.defaultPriority(LOG_USER);
+#endif
     led_setup();
     led_on();
     delay(100);
@@ -104,9 +120,11 @@ void setup()
     DEBUG_MSG(F("IP address: http://"));
     DEBUG_MSG_LN(WiFi.localIP());
     DEBUG_FLUSH();
+    LOG_MSGF(LOG_INFO,"IP address: http://%s",WiFi.localIP().toString().c_str());
 
     led_off();
     ESP.wdtFeed(); //Force software watchdog to restart from 0
+    last_receive = millis();
     
 }
 
@@ -138,11 +156,33 @@ void loop()
         tic_decode(c);
     }
 #else
+    now = millis();
+    teleinfo_off_min = (now - last_receive) /60000; // convert to minute
     if (Serial.available())
     {
+        if ( teleinfo_off_min >= 1) {
+        // pas de reception teleinfo
+        LOG_MSGF(LOG_ERR," reprise teleinfo arret depuis %d minutes",teleinfo_off_min);
+        #ifdef ENABLE_MQTT
+            String data;
+            data = "on "+teleinfo_off_min;
+            mqttPost("teleinfo", data.c_str());
+        #endif
+        }
+        last_receive = now;
         char c = Serial.read();
         if ( c != -1 )
             tic_decode(c);
+    }
+    int teleinfo_off_min = (now - last_receive) /60000; // convert to minute
+    if ( teleinfo_off_min >= 1) {
+        // pas de reception teleinfo
+        LOG_MSGF(LOG_ERR," pas de teleinfo deupis %d minutes",teleinfo_off_min);
+        #ifdef ENABLE_MQTT
+            String data;
+            data = "off "+teleinfo_off_min;
+            mqttPost("teleinfo", data.c_str());
+        #endif
     }
 #endif
 }

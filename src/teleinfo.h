@@ -7,6 +7,7 @@
 #include <Arduino.h>
 #include <sys/time.h>
 #include <time.h>
+#include "logger.h"
 
 #define STX 0x02 // start of text
 #define ETX 0x03 // end of text
@@ -502,6 +503,9 @@ public:
                             checksum_error++;
                             state_ = wait_stx;
                             //Serial.printf("mauvais chechsum %02x expected %02x\n",accumulated_checksum,checksum );
+                            LOG_MSGF(LOG_ERR,"frame %s erreur  chechsum %02x expected %02x",
+                                    &frame_[offset_start_group_],
+                                    accumulated_checksum,checksum);
                         }
                     }
                     else
@@ -509,6 +513,7 @@ public:
                         // pas assez de caractères: reinit
                         state_ = wait_stx;
                         //Serial.println("pas assez de caractères");
+                        LOG_MSG(LOG_ERR,"pas assez de caractères");
                     }
                 }
                 else
@@ -516,11 +521,13 @@ public:
                     // frame trop longue: reinit
                     state_ = wait_stx;
                     //Serial.println("frame trop longue");
+                    LOG_MSG(LOG_ERR,"frame trop longue");
                 }
             }
             else
             {
                 //Serial.printf("mauvais etat %d %d %c\n",state_, offset_, c);
+                LOG_MSGF(LOG_ERR,"mauvais etat %d %d %c",state_, offset_, c);
                 // mauvais état: reinit
                 state_ = wait_stx;
                 

@@ -23,6 +23,7 @@
 //
 // **********************************************************************************
 #include "debug.h"
+#include "logger.h"
 #include "wifinfo.h"
 #include "config.h"
 #include "jsonbuilder.h"
@@ -45,6 +46,7 @@ void config_setup()
     if (config_read())
     {
         DEBUG_MSG_LN(F("Good CRC, not set! From now, we can use EEPROM config !"));
+        LOG_MSG(LOG_INFO,"Good CRC, not set! From now, we can use EEPROM config !" );
     }
     else
     {
@@ -55,6 +57,7 @@ void config_setup()
         config_save();
 
         DEBUG_MSG_LN(F("Reset to default"));
+        LOG_MSG(LOG_INFO,"Reset to default");
     }
 }
 
@@ -220,6 +223,7 @@ bool config_save()
     ret_code = config_read(false);
 
     DEBUG_MSG_LN(F("Write config "));
+    LOG_MSG(LOG_INFO,"Write config ");
 
     // return result
     return ret_code;
@@ -230,88 +234,129 @@ void config_show()
 {
     DEBUG_MSG_LN();
     DEBUG_MSG_LN(F("===== Wi-Fi"));
+    LOG_MSG(LOG_INFO,"===== Wi-Fi");
     DEBUG_MSG(F("ssid     :"));
     DEBUG_MSG_LN(config.ssid);
+    LOG_MSGF(LOG_INFO,"ssid     :%s",config.ssid);
     DEBUG_MSG(F("psk      :"));
     DEBUG_MSG_LN(config.psk);
+    LOG_MSGF(LOG_INFO,"psk      :%s",config.psk);
     DEBUG_MSG(F("host     :"));
     DEBUG_MSG_LN(config.host);
+    LOG_MSGF(LOG_INFO,"host     :%s",config.host);
+    
     DEBUG_MSG_LN(F("===== Advanced"));
+    LOG_MSG(LOG_INFO,"===== Advanced");
     DEBUG_MSG(F("ap_psk   :"));
     DEBUG_MSG_LN(config.ap_psk);
+    LOG_MSGF(LOG_INFO,"ap_psk   :%s",config.ap_psk);
     DEBUG_MSG(F("OTA auth :"));
     DEBUG_MSG_LN(config.ota_auth);
+    LOG_MSGF(LOG_INFO,"OTA auth :%s",config.ota_auth);
     DEBUG_MSG(F("OTA port :"));
     DEBUG_MSG_LN(config.ota_port);
+    LOG_MSGF(LOG_INFO,"OTA port :%d",config.ota_port);
+    
 
     DEBUG_MSG(F("Username :"));
     DEBUG_MSG_LN(config.username);
+    LOG_MSGF(LOG_INFO,"Username :%s",config.username);
     DEBUG_MSG(F("Password :"));
     DEBUG_MSG_LN(config.password);
+    // no password on LOG !!!
 
     DEBUG_MSG(F("SSE freq :"));
     DEBUG_MSG_LN(config.sse_freq);
+    LOG_MSGF(LOG_INFO,"SSE freq :%d",config.sse_freq);
+    
 
     DEBUG_MSG(F("Config   :"));
     if (config.options & OPTION_LED_TINFO)
     {
         DEBUG_MSG(F(" LED_TINFO"));
+        LOG_MSG(LOG_INFO,"Config   : LED_TINFO");
     }
+
     DEBUG_MSG_LN();
 #ifdef ENABLE_EMONCMS
     DEBUG_MSG_LN(F("===== Emoncms"));
+    LOG_MSG(LOG_INFO,"===== Emoncms");
     DEBUG_MSG(F("host     :"));
     DEBUG_MSG_LN(config.emoncms.host);
+    LOG_MSGF(LOG_INFO,"host     :%s",config.emoncms.host);
     DEBUG_MSG(F("port     :"));
     DEBUG_MSG_LN(config.emoncms.port);
+    LOG_MSGF(LOG_INFO,"port     :%s",config.emoncms.port);
     DEBUG_MSG(F("url      :"));
     DEBUG_MSG_LN(config.emoncms.url);
+    LOG_MSGF(LOG_INFO,"url      :%s",config.emoncms.url);
     DEBUG_MSG(F("key      :"));
     DEBUG_MSG_LN(config.emoncms.apikey);
+    LOG_MSGF(LOG_INFO,"key      :%s",config.emoncms.apikey);
     DEBUG_MSG(F("node     :"));
     DEBUG_MSG_LN(config.emoncms.node);
+    LOG_MSGF(LOG_INFO,"node     :%s",config.emoncms.node);
     DEBUG_MSG(F("freq     :"));
     DEBUG_MSG_LN(config.emoncms.freq);
+    LOG_MSGF(LOG_INFO,"freq     :%s",config.emoncms.freq);
+    
 #endif
 
 #ifdef ENABLE_JEEDOM
     DEBUG_MSG_LN(F("===== Jeedom"));
+    LOG_MSG(LOG_INFO,"===== Jeedom");
     DEBUG_MSG(F("host     :"));
     DEBUG_MSG_LN(config.jeedom.host);
+    LOG_MSGF(LOG_INFO,"host     :%s",config.jeedom.host);
     DEBUG_MSG(F("port     :"));
     DEBUG_MSG_LN(config.jeedom.port);
+    LOG_MSGF(LOG_INFO,"port     :%s",config.jeedom.port);
     DEBUG_MSG(F("url      :"));
     DEBUG_MSG_LN(config.jeedom.url);
+    LOG_MSGF(LOG_INFO,"url      :%s",config.jeedom.url);
     DEBUG_MSG(F("key      :"));
     DEBUG_MSG_LN(config.jeedom.apikey);
+    LOG_MSGF(LOG_INFO,"key      :%s",config.jeedom.apikey);
     DEBUG_MSG(F("compteur :"));
     DEBUG_MSG_LN(config.jeedom.adco);
+    LOG_MSGF(LOG_INFO,"compteur :%s",config.jeedom.adco);
     DEBUG_MSG(F("freq     :"));
     DEBUG_MSG_LN(config.jeedom.freq);
+    LOG_MSGF(LOG_INFO,"freq     :%s",config.jeedom.freq);
+    
 #endif
 
     DEBUG_MSG_LN(F("===== HTTP request"));
+    LOG_MSG(LOG_INFO,"===== HTTP request");
     DEBUG_MSG(F("host      : "));
     DEBUG_MSG_LN(config.httpreq.host);
+    LOG_MSGF(LOG_INFO,"host      : %s",config.httpreq.host);
     DEBUG_MSG(F("port      : "));
     DEBUG_MSG_LN(config.httpreq.port);
+    LOG_MSGF(LOG_INFO,"port      : %d",config.httpreq.port);
     DEBUG_MSG(F("url       : "));
+    DEBUG_MSG_LN(config.httpreq.url);
+    LOG_MSGF(LOG_INFO,"url       : %s",config.httpreq.url);
+    
     DEBUG_MSG(F("method    : "));
     if (config.httpreq.use_post)
     {
         DEBUG_MSG_LN(F("POST"));
+        LOG_MSG(LOG_INFO,"method    : POST");
     }
     else
     {
         DEBUG_MSG_LN(F("GET"));
+        LOG_MSG(LOG_INFO,"method    : GET");
     }
-    DEBUG_MSG_LN(config.httpreq.url);
     DEBUG_MSG(F("freq      : "));
     DEBUG_MSG_LN(config.httpreq.freq);
+    LOG_MSGF(LOG_INFO,"freq      : %d",config.httpreq.freq);
+    
     DEBUG_MSG(F("notifs    :"));
     if (config.httpreq.trigger_ptec)
     {
-        DEBUG_MSG(F(" PTEC"));
+        DEBUG_MSG(" PTEC");
     }
     if (config.httpreq.trigger_adps)
     {
@@ -322,10 +367,18 @@ void config_show()
         DEBUG_MSG(F(" seuils"));
     }
     DEBUG_MSG_LN();
+    LOG_MSGF(LOG_INFO,"notifs    :%s %s %s",
+                config.httpreq.trigger_ptec?" PTEC":"",
+                config.httpreq.trigger_adps?" ADPS":"",
+                config.httpreq.trigger_seuils?" seuils":"" );
+
     DEBUG_MSG(F("seuil bas : "));
     DEBUG_MSG_LN(config.httpreq.seuil_bas);
+    LOG_MSGF(LOG_INFO,"seuil bas : %d",config.httpreq.seuil_bas);
+    
     DEBUG_MSG(F("seuil haut: "));
     DEBUG_MSG_LN(config.httpreq.seuil_haut);
+    LOG_MSGF(LOG_INFO,"seuil haut: %d",config.httpreq.seuil_haut);
 
 #ifdef ENABLE_RELAY
     DEBUG_MSG_LN("\r\n===== Relais"); 
@@ -333,6 +386,7 @@ void config_show()
     DEBUG_MSG_LN(config.relays[0].u.all,BIN); 
     DEBUG_MSG(F("relai 1  state:"));
     DEBUG_MSG_LN(config.relays[1].u.all, BIN); 
+    LOG_MSGF(LOG_INFO,"===== Relais: relai 0  state:0x%0x relai 1  state:0x%0x ",config.relays[0].u.all,config.relays[1].u.all);
 #endif   
     DEBUG_FLUSH();
 }
@@ -410,8 +464,9 @@ void config_handle_form(ESP8266WebServer &server, bool restricted)
     if (server.hasArg("save"))
     {
         DEBUG_MSG_LN(F("===== Posted configuration"));
-        for (int i = 0; i < server.args(); ++i)
+        for (int i = 0; i < server.args(); ++i){
             DEBUG_MSGF("  %3d  %-20s = %s\n", i, server.argName(i).c_str(), server.arg(i).c_str());
+        }
         DEBUG_MSG_LN(F("===== Posted configuration"));
 
         // Wi-Fi et avancé
