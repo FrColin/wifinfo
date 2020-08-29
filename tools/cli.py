@@ -469,9 +469,9 @@ class Miniterm(object):
                     c = self.console.getkey()
                 except KeyboardInterrupt:
                     c = chr(0x03)
+                
                 if not self.alive:
                     break
-
                 elif c == chr(0x14):  # Ctrl-T
                     self.send_tic()
 
@@ -504,6 +504,7 @@ class Miniterm(object):
                 
                 elif c == chr(0x03):  # Ctrl-C
                     self.stop()  # exit app
+                    self.console.write("exit app\n")
                     break
 
                 else:
@@ -520,6 +521,7 @@ class Miniterm(object):
                         self.console.write(echo_text)
         except Exception:
             self.alive = False
+            self.console.write("Exception")
             raise
 
     def send_tic_periodic(self):
