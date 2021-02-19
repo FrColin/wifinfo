@@ -6,7 +6,7 @@
 #include "wifinfo.h"
 
 #ifdef ENABLE_CLI
-
+#include "debug.h"
 #include "cli.h"
 #include "config.h"
 #include "filesystem.h"

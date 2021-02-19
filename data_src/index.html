@@ -392,6 +392,86 @@
                                 </div>
                             </div>
                         </div> <!-- panel HTTP request -->
+                        <!-- Panel UDP Request -->
+                        <div class="panel-group" id="pan_udpReq">
+                            <div class="panel panel-info">
+                                <div class="panel-heading clearfix">
+                                    <h3 class="panel-title clickable" data-toggle="collapse" data-parent="#pan_udpReq" data-target="#col_udpReq">
+                                        <span class="glyphicon glyphicon-globe"></span>&nbsp;Requête UDP<span
+                                            class="pull-right glyphicon glyphicon-chevron-down"></span>
+                                    </h3>
+                                </div>
+                                <div class="panel-collapse collapse out" id="col_udpReq">
+                                    <div class="panel-body">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Hostname</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="sendudp_host" name="sendudp_host" maxlength="32"
+                                                    placeholder="Hostname">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Port</label>
+                                            <div class="col-sm-2">
+                                                <input type="text" class="form-control" id="sendudp_port" name="sendudp_port" maxlength="5" placeholder="Port">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Mise à jour</label>
+                                            <div class="col-sm-9">
+                                                <select id="sendudp_freq" name="sendudp_freq" class="form-control col-sm-2">
+                                                    <option value="0">désactivée</option>
+                                                    <option value="15">toutes les 15 secondes</option>
+                                                    <option value="30">toutes les 30 secondes</option>
+                                                    <option value="60">toutes les minutes</option>
+                                                    <option value="300">toutes les 5 minutes</option>
+                                                    <option value="900">tous les 1/4 d'heure</option>
+                                                    <option value="1800">toutes les 1/2 heure</option>
+                                                    <option value="3600">toutes les heures</option>
+                                                    <option value="21600">toutes les 6 heures</option>
+                                                    <option value="42300">toutes les 12 heures</option>
+                                                    <option value="86400">tous les jours</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Déclencheurs</label>
+                                            <div class="col-sm-9">
+                                                <label class="checkbox-inline"><input type="checkbox" id="sendudp_trigger_ptec" name="sendudp_trigger_ptec"
+                                                        value="1">Changement PTEC</label>
+                                                <label class="checkbox-inline"><input type="checkbox" id="sendudp_trigger_adps" name="sendudp_trigger_adps"
+                                                        value="1">ADPS</label>
+                                                <label class="checkbox-inline"><input type="checkbox" id="sendudp_trigger_seuils" name="sendudp_trigger_seuils"
+                                                        value="1">Seuils</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Seuils</label>
+                                            <div class="col-sm-9">
+                                                <div class="form-group">
+                                                    <div class="col-sm-3">
+                                                        <input type="text" class="form-control" id="sendudp_seuil_bas" name="sendudp_seuil_bas" maxlength="5"
+                                                            placeholder="Seuil bas">
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <input type="text" class="form-control" id="sendudp_seuil_haut" name="sendudp_seuil_haut" maxlength="5"
+                                                            placeholder="Seuil haut">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel-footer">
+                                        <div class="text-center">
+                                            <div class="btn-group">
+                                                <button type="submit" class="btn btn-default btn-warning">Enregistrer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- panel UDP request -->
                         <!-- panel MQTT -->
                         <div class="panel-group" id="pan_mqtt">
                             <div class="panel panel-info">

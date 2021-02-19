@@ -15,7 +15,7 @@ def get_minifier(suffix):
 
     if suffix in set([".htm", ".html"]):
         return (
-            "html-minifier --collapse-whitespace --remove-comments --remove-optional-tags \
+            "npx html-minifier --collapse-whitespace --remove-comments --remove-optional-tags \
 --remove-redundant-attributes --remove-script-type-attributes --remove-tag-whitespace \
 --use-short-doctype --minify-css true --minify-js true {S} | gzip -c > {D}",
             ".gz",

@@ -84,6 +84,9 @@ static void config_securize_cstrings()
     config.jeedom.url[CFG_JDOM_URL_LENGTH] = 0;
     config.jeedom.adco[CFG_JDOM_ADCO_LENGTH] = 0;
 #endif
+#ifdef ENABLE_SENUDP
+    config.sendudp.host[CFG_SENDUDP_HOST_LENGTH] = 0;
+#endif
 #ifdef ENABLE_MQTT
     config.mqtt.host[CFG_MQTT_HOST_LENGTH] = 0;
     config.mqtt.outTopic[CFG_MQTT_TOPIC_LENGTH] = 0;
@@ -117,6 +120,12 @@ void config_reset()
     config.jeedom.port = CFG_JDOM_DEFAULT_PORT;
     strcpy_P(config.jeedom.url, CFG_JDOM_DEFAULT_URL);
     strcpy_P(config.jeedom.adco, CFG_JDOM_DEFAULT_ADCO);
+#endif
+
+#ifdef ENABLE_SENDUDP
+    // Sendudp
+    strcpy_P(config.sendudp.host, CFG_SENDUDP_DEFAULT_HOST);
+    config.sendudp.port = CFG_SENDUDP_DEFAULT_PORT;
 #endif
 
 #ifdef ENABLE_MQTT
@@ -302,6 +311,21 @@ void config_show()
     
 #endif
 
+#ifdef ENABLE_SENUDP
+    DEBUG_MSG_LN(F("===== Sendudp"));
+    LOG_MSG(LOG_INFO,"===== Sendudp");
+    DEBUG_MSG(F("host     :"));
+    DEBUG_MSG_LN(config.sendudp.host);
+    LOG_MSGF(LOG_INFO,"host     :%s",config.sendudp.host);
+    DEBUG_MSG(F("port     :"));
+    DEBUG_MSG_LN(config.sendudp.port);
+    LOG_MSGF(LOG_INFO,"port     :%s",config.sendudp.port);
+    DEBUG_MSG(F("freq     :"));
+    DEBUG_MSG_LN(config.sendudp.freq);
+    LOG_MSGF(LOG_INFO,"freq     :%s",config.sendudp.freq);
+    
+#endif
+
 #ifdef ENABLE_JEEDOM
     DEBUG_MSG_LN(F("===== Jeedom"));
     LOG_MSG(LOG_INFO,"===== Jeedom");
@@ -422,6 +446,18 @@ void config_get_json(String &r, bool restricted)
     js.append(CFG_FORM_EMON_FREQ, config.emoncms.freq);
 #endif
 
+#ifdef ENABLE_SENDUDP
+    js.append(CFG_FORM_SENDUDP_HOST, config.sendudp.host);
+    js.append(CFG_FORM_SENDUDP_PORT, config.sendudp.port);
+    js.append(CFG_FORM_SENDUDP_FREQ, config.sendudp.freq);
+    js.append(CFG_FORM_SENDUDP_FREQ, config.sendudp.freq);
+    js.append(CFG_FORM_SENDUDP_TRIGGER_PTEC, config.sendudp.trigger_ptec);
+    js.append(CFG_FORM_SENDUDP_TRIGGER_ADPS, config.sendudp.trigger_adps);
+    js.append(CFG_FORM_SENDUDP_TRIGGER_SEUILS, config.sendudp.trigger_seuils);
+    js.append(CFG_FORM_SENDUDP_SEUIL_BAS, config.sendudp.seuil_bas);
+    js.append(CFG_FORM_SENDUDP_SEUIL_HAUT, config.sendudp.seuil_haut);
+#endif
+
 #ifdef ENABLE_JEEDOM
     js.append(CFG_FORM_JDOM_HOST, config.jeedom.host);
     js.append(CFG_FORM_JDOM_PORT, config.jeedom.port);
@@ -506,6 +542,12 @@ void config_handle_form(ESP8266WebServer &server, bool restricted)
         strncpy_s(config.jeedom.apikey, server.arg(CFG_FORM_JDOM_KEY), CFG_JDOM_KEY_LENGTH);
         strncpy_s(config.jeedom.adco, server.arg(CFG_FORM_JDOM_ADCO), CFG_JDOM_ADCO_LENGTH);
         config.jeedom.freq = validate_int(server.arg(CFG_FORM_JDOM_FREQ), 0, 86400, 0);
+#endif
+#ifdef ENABLE_SENDUDP
+        // sendudp
+        strncpy_s(config.sendudp.host, server.arg(CFG_FORM_SENDUDP_HOST), CFG_SENDUDP_HOST_LENGTH);
+        config.sendudp.port = validate_int(server.arg(CFG_FORM_SENDUDP_PORT), 0, 65535, CFG_SENDUDP_DEFAULT_PORT);
+        config.sendudp.freq = validate_int(server.arg(CFG_FORM_SENDUDP_FREQ), 0, 86400, 0);
 #endif
         // HTTP Request
         strncpy_s(config.httpreq.host, server.arg(CFG_FORM_HTTPREQ_HOST), CFG_HTTPREQ_HOST_LENGTH);

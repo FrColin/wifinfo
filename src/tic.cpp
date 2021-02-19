@@ -1,5 +1,7 @@
 // module téléinformation client
 // rene-d 2020
+#include <Arduino.h>
+#include <ArduinoOTA.h>
 #include <PolledTimeout.h>
 #include "debug.h"
 #include "logger.h"
@@ -47,7 +49,11 @@ static esp8266::polledTimeout::periodicMs timer_jeedom(esp8266::polledTimeout::p
 #ifdef ENABLE_MQTT
 static esp8266::polledTimeout::periodicMs timer_mqtt(esp8266::polledTimeout::periodicMs::neverExpires);
 #endif
-
+#ifdef ENABLE_SENDUDP
+// A UDP instance to let us send packets over UDP
+WiFiUDP udpTeleinfoClient;
+static esp8266::polledTimeout::periodicMs timer_sendudp(esp8266::polledTimeout::periodicMs::neverExpires);
+#endif
 static esp8266::polledTimeout::periodicMs timer_sse(esp8266::polledTimeout::periodicMs::neverExpires);
 
 Teleinfo tinfo;
@@ -64,6 +70,9 @@ static void jeedom_notif();
 #endif
 #ifdef ENABLE_EMONCMS
 static void emoncms_notif();
+#endif
+#ifdef ENABLE_SENDUDP
+static void sendudp_notif();
 #endif
 #ifdef ENABLE_MQTT
 static void mqtt_notif();
@@ -149,6 +158,12 @@ void tic_notifs()
         emoncms_notif();
     }
 #endif
+#ifdef ENABLE_SENDUDP
+if (timer_sendudp)
+    {
+        sendudp_notif();
+    }
+#endif
 #ifdef ENABLE_MQTT
     if (config.mqtt.host[0] != 0)
     {
@@ -215,6 +230,21 @@ void tic_make_timers()
         DEBUG_MSGF_P(PSTR("timer_emoncms enabled, freq=%d s\n"), config.emoncms.freq);
     }
 #endif
+
+#ifdef ENABLE_SENDUDP
+    // sendudp
+    if ((config.sendudp.freq == 0) || (config.sendudp.host[0] == 0) || (config.sendudp.port == 0))
+    {
+        timer_sendudp.resetToNeverExpires();
+        DEBUG_MSG_LN("timer_sendudp disabled");
+    }
+    else
+    {
+        timer_sendudp.reset(config.sendudp.freq * 1000);
+        DEBUG_MSGF_P(PSTR("timer_sendudp enabled, freq=%d s\n"), config.sendudp.freq);
+    }
+#endif
+
 #ifdef ENABLE_MQTT
     // mqtt
     if ((config.mqtt.freq == 0) || (config.mqtt.host[0] == 0) || (config.mqtt.port == 0))
@@ -785,6 +815,26 @@ static void emoncms_notif()
 
     // And submit all to emoncms
     http_request(config.emoncms.host, config.emoncms.port, url);
+}
+#endif
+
+#ifdef ENABLE_SENDUDP
+// send UDP Packet (called by main sketch on timer, if activated)
+static void sendudp_notif()
+{
+    // Some basic checking
+    if (config.sendudp.host[0] == 0)
+    {
+        return;
+    }
+
+    // And submit all to UDP host
+    String data;
+    tic_get_json_dict(data, false);
+    if ( udpTeleinfoClient.beginPacket(config.sendudp.host, config.sendudp.port) ) {
+        udpTeleinfoClient.write(data.c_str());
+        udpTeleinfoClient.endPacket();
+    }
 }
 #endif
 

@@ -137,6 +137,38 @@ struct JeedomConfig
 } __attribute__((packed));
 #endif
 
+#ifdef ENABLE_SENDUDP
+
+#define CFG_SENDUDP_HOST_LENGTH 32
+#define CFG_SENDUDP_DEFAULT_PORT 9543
+#define CFG_SENDUDP_DEFAULT_HOST PSTR("raspi")
+#define CFG_FORM_SENDUDP_HOST FPSTR("sendudp_host")
+#define CFG_FORM_SENDUDP_PORT FPSTR("sendudp_port")
+#define CFG_FORM_SENDUDP_FREQ FPSTR("sendudp_freq")
+#define CFG_FORM_SENDUDP_TRIGGER_PTEC FPSTR("sendudp_trigger_ptec")
+#define CFG_FORM_SENDUDP_TRIGGER_ADPS FPSTR("sendudp_trigger_adps")
+#define CFG_FORM_SENDUDP_TRIGGER_SEUILS FPSTR("sendudp_trigger_seuils")
+#define CFG_FORM_SENDUDP_SEUIL_HAUT FPSTR("sendudp_seuil_haut")
+#define CFG_FORM_SENDUDP_SEUIL_BAS FPSTR("sendudp_seuil_bas")
+
+
+// Config for emoncms
+// 128 Bytes
+struct SendudpConfig
+{
+    char host[CFG_SENDUDP_HOST_LENGTH + 1];  // FQDN
+    uint16_t port;                        // port
+    uint32_t freq;                        // refresh rate
+    uint8_t trigger_adps : 1;
+    uint8_t trigger_ptec : 1;
+    uint8_t trigger_seuils : 1;
+    uint8_t unused : 4;   // pour remplir l'octet
+    uint16_t seuil_haut;
+    uint16_t seuil_bas;
+    uint8_t filler[82];
+} __attribute__((packed));
+#endif
+
 #ifdef ENABLE_MQTT
 
 #define CFG_MQTT_HOST_LENGTH 32
@@ -223,6 +255,9 @@ struct Config
     #endif
     #ifdef ENABLE_JEEDOM
     JeedomConfig jeedom;                    // jeedom configuration
+    #endif
+    #ifdef ENABLE_SENDUDP
+    SendudpConfig sendudp;                    // sendudp configuration
     #endif
     HttpreqConfig httpreq;                  // HTTP request
     #ifdef ENABLE_RELAY
