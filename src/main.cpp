@@ -55,6 +55,8 @@ void setup()
   syslog.deviceHostname(DEVICE_HOSTNAME);
   syslog.appName(APP_NAME);
   syslog.defaultPriority(LOG_USER);
+  rst_info *resetInfo;
+  resetInfo = ESP.getResetInfoPtr();
 #endif
     led_setup();
     led_on();
@@ -120,7 +122,9 @@ void setup()
     DEBUG_MSG(F("IP address: http://"));
     DEBUG_MSG_LN(WiFi.localIP());
     DEBUG_FLUSH();
-    LOG_MSGF(LOG_INFO,"IP address: http://%s",WiFi.localIP().toString().c_str());
+    LOG_MSGF(LOG_INFO,"IP address: http://%s \n",WiFi.localIP().toString().c_str());
+    LOG_MSGF(LOG_INFO," restart reason : %d \n",resetInfo->reason);
+  
 
     led_off();
     ESP.wdtFeed(); //Force software watchdog to restart from 0

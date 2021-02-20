@@ -152,7 +152,7 @@ struct JeedomConfig
 #define CFG_FORM_SENDUDP_SEUIL_BAS FPSTR("sendudp_seuil_bas")
 
 
-// Config for emoncms
+// Config for sendudp
 // 128 Bytes
 struct SendudpConfig
 {
@@ -162,10 +162,10 @@ struct SendudpConfig
     uint8_t trigger_adps : 1;
     uint8_t trigger_ptec : 1;
     uint8_t trigger_seuils : 1;
-    uint8_t unused : 4;   // pour remplir l'octet
+    uint8_t unused : 5;   // pour remplir l'octet
     uint16_t seuil_haut;
     uint16_t seuil_bas;
-    uint8_t filler[82];
+    uint8_t filler[84];
 } __attribute__((packed));
 #endif
 
