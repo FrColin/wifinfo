@@ -238,10 +238,12 @@ void webserver_setup()
     });
 
     server.on(F("/version"), []() {
-        File file = WIFINFO_FS.open("/version", "r");
+        //File file = WIFINFO_FS.open("/version", "r");
+        //server.sendHeader("Cache-Control", "max-age=86400");
+        //server.streamFile(file, mime::mimeTable[mime::txt].mimeType);
+        //file.close();
         server.sendHeader("Cache-Control", "max-age=86400");
-        server.streamFile(file, mime::mimeTable[mime::txt].mimeType);
-        file.close();
+        server.send(200, mime::mimeTable[mime::txt].mimeType, WIFINFO_VERSION);
     });
 
     /*
