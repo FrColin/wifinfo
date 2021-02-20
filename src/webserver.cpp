@@ -284,7 +284,7 @@ static bool webserver_handle_read(const String &path)
         return false;
     }
 
-    String contentType = esp8266webserver::StaticRequestHandler<WiFiServer>::getContentType(path);
+    String contentType = mime::getContentType(path);
 
     String real_path = path + ".gz";
     if (!WIFINFO_FS.exists(real_path)) // If there's a compressed version available
