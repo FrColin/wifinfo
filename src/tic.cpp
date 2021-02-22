@@ -72,7 +72,8 @@ static void jeedom_notif();
 static void emoncms_notif();
 #endif
 #ifdef ENABLE_SENDUDP
-static void sendudp_notif();
+static void sendudp_notif(const char *notif);
+static void sendudp_notif_adps();
 #endif
 #ifdef ENABLE_MQTT
 static void mqtt_notif();
@@ -159,10 +160,19 @@ void tic_notifs()
     }
 #endif
 #ifdef ENABLE_SENDUDP
-if (timer_sendudp)
+    // Some basic checking
+    if (config.sendudp.host[0] != 0)
     {
-        sendudp_notif();
+        if (config.sendudp.trigger_adps)
+        {
+            sendudp_notif_adps();
+        }
+        else if (timer_sendudp || (config.sendudp.trigger_ptec && change_ptec))
+        {
+            sendudp_notif(nullptr);
+        }
     }
+
 #endif
 #ifdef ENABLE_MQTT
     if (config.mqtt.host[0] != 0)
@@ -819,18 +829,37 @@ static void emoncms_notif()
 #endif
 
 #ifdef ENABLE_SENDUDP
-// send UDP Packet (called by main sketch on timer, if activated)
-static void sendudp_notif()
+static void sendudp_notif_adps()
 {
-    // Some basic checking
-    if (config.sendudp.host[0] == 0)
-    {
-        return;
-    }
+    static bool etat_adps = false;
+    const char *ADPS = tinfo.get_value("ADPS");
 
+    if (ADPS == NULL)
+    {
+        if (etat_adps == true)
+        {
+            // on était en ADPS: on signale et on rebascule en état normal
+            etat_adps = false;
+            sendudp_notif(HTTP_NOTIF_TYPE_NORM);
+
+        }
+    }
+    else
+    {
+        if (etat_adps == false)
+        {
+            // on vient de passer en ADPS: on signale et on bascule dans l'état ADPS
+            etat_adps = true;
+            sendudp_notif(HTTP_NOTIF_TYPE_ADPS);
+        }
+    }
+}
+// send UDP Packet (called by main sketch on timer, if activated)
+static void sendudp_notif(const char*notif)
+{
     // And submit all to UDP host
     String data;
-    tic_get_json_dict(data, false);
+    tic_get_json_dict_notif(data, notif);
     if ( udpTeleinfoClient.beginPacket(config.sendudp.host, config.sendudp.port) ) {
         udpTeleinfoClient.write(data.c_str());
         udpTeleinfoClient.endPacket();
