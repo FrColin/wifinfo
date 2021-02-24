@@ -167,7 +167,11 @@ void tic_notifs()
         {
             sendudp_notif_adps();
         }
-        else if (timer_sendudp || (config.sendudp.trigger_ptec && change_ptec))
+        if ((config.sendudp.trigger_ptec && change_ptec))
+        {
+            sendudp_notif(HTTP_NOTIF_TYPE_PTEC);
+        }
+        if (timer_sendudp)
         {
             sendudp_notif(nullptr);
         }
