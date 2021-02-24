@@ -548,6 +548,11 @@ void config_handle_form(ESP8266WebServer &server, bool restricted)
         strncpy_s(config.sendudp.host, server.arg(CFG_FORM_SENDUDP_HOST), CFG_SENDUDP_HOST_LENGTH);
         config.sendudp.port = validate_int(server.arg(CFG_FORM_SENDUDP_PORT), 0, 65535, CFG_SENDUDP_DEFAULT_PORT);
         config.sendudp.freq = validate_int(server.arg(CFG_FORM_SENDUDP_FREQ), 0, 86400, 0);
+        config.sendudp.trigger_adps = server.hasArg(CFG_FORM_SENDUDP_TRIGGER_ADPS);
+        config.sendudp.trigger_ptec = server.hasArg(CFG_FORM_SENDUDP_TRIGGER_PTEC);
+        config.sendudp.trigger_seuils = server.hasArg(CFG_FORM_SENDUDP_TRIGGER_SEUILS);
+        config.sendudp.seuil_bas = validate_int(server.arg(CFG_FORM_SENDUDP_SEUIL_BAS), 0, 20000, 0);
+        config.sendudp.seuil_haut = validate_int(server.arg(CFG_FORM_SENDUDP_SEUIL_HAUT), 0, 20000, 0);
 #endif
         // HTTP Request
         strncpy_s(config.httpreq.host, server.arg(CFG_FORM_HTTPREQ_HOST), CFG_HTTPREQ_HOST_LENGTH);
